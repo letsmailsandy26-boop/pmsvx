@@ -20,7 +20,7 @@ export function UsersPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['users', page, search],
-    queryFn: () => usersApi.list({ page, search, limit: 20 }),
+    queryFn: () => usersApi.list({ page, search, limit: 20, isActive: 'true' }),
   })
 
   const deleteMutation = useMutation({
@@ -123,7 +123,7 @@ export function UsersPage() {
         onClose={() => setDeleteId(null)}
         onConfirm={() => deleteId && deleteMutation.mutate(deleteId)}
         isLoading={deleteMutation.isPending}
-        message="This will deactivate the user account."
+        message="This will permanently delete the user account."
       />
     </div>
   )
