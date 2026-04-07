@@ -39,18 +39,25 @@ export const tasksService = {
   },
 
   async getById(id: number) {
-    const task = await prisma.task.findUnique({
-      where: { id },
-      include: {
-        ...taskInclude,
-        comments: { include: { author: { select: { id: true, name: true, avatarUrl: true } } }, orderBy: { createdAt: 'asc' } },
-        attachments: { include: { uploader: { select: { id: true, name: true } } } },
-        timeLogs: { include: { user: { select: { id: true, name: true } } }, orderBy: { logDate: 'desc' } },
-        activities: { include: { actor: { select: { id: true, name: true, avatarUrl: true } } }, orderBy: { createdAt: 'desc' }, take: 50 },
-      },
-    });
+    const [task, activities] = await Promise.all([
+      prisma.task.findUnique({
+        where: { id },
+        include: {
+          ...taskInclude,
+          comments: { include: { author: { select: { id: true, name: true, avatarUrl: true } } }, orderBy: { createdAt: 'asc' } },
+          attachments: { include: { uploader: { select: { id: true, name: true } } } },
+          timeLogs: { include: { user: { select: { id: true, name: true } } }, orderBy: { logDate: 'desc' } },
+        },
+      }),
+      prisma.activity.findMany({
+        where: { entityType: 'Task', entityId: id },
+        include: { actor: { select: { id: true, name: true, avatarUrl: true } } },
+        orderBy: { createdAt: 'desc' },
+        take: 50,
+      }),
+    ]);
     if (!task) throw Object.assign(new Error('Task not found'), { statusCode: 404 });
-    return task;
+    return { ...task, activities };
   },
 
   async create(data: {
