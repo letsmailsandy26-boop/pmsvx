@@ -62,13 +62,17 @@ async function main() {
     },
   });
 
-  const project = await prisma.project.upsert({
-    where: { id: 1 },
-    update: {},
-    create: {
+  // Skip if already seeded
+  const existingProject = await prisma.project.findFirst({ where: { name: 'E-Commerce Platform' } });
+  if (existingProject) {
+    console.log('Database already seeded, skipping...');
+    return;
+  }
+
+  const project = await prisma.project.create({
+    data: {
       name: 'E-Commerce Platform',
       description: 'Building a full-featured e-commerce platform with React and Node.js',
-      clientName: 'RetailCo Ltd',
       startDate: new Date('2024-01-01'),
       endDate: new Date('2024-12-31'),
       status: ProjectStatus.Active,
@@ -157,6 +161,8 @@ async function main() {
       { taskId: task3.id, authorId: user1.id, body: 'The issue is in the coupon validation function. It calls `.trim()` on a potentially undefined value.' },
     ],
   });
+
+  void task1;
 
   console.log('Seeding complete!');
   console.log('Credentials:');
