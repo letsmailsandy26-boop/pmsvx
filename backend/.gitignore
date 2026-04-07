@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.env
+uploads/avatars/*
+uploads/projects/*
+uploads/tasks/*
+!uploads/avatars/.gitkeep
+!uploads/projects/.gitkeep
+!uploads/tasks/.gitkeep

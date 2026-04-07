@@ -1,0 +1,265 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  Admin
+  Manager
+  User
+}
+
+enum ProjectStatus {
+  Planning
+  Active
+  OnHold
+  Completed
+  Cancelled
+}
+
+enum TaskType {
+  Task
+  Bug
+  Feature
+}
+
+enum TaskStatus {
+  New
+  InProgress
+  ReviewPending
+  Testing
+  TestingDone
+  ReadyForProduction
+  Closed
+}
+
+enum Priority {
+  Low
+  Medium
+  High
+  Critical
+}
+
+enum LogCategory {
+  Development
+  Testing
+  Meeting
+  Support
+}
+
+enum ActivityAction {
+  StatusChanged
+  AssigneeChanged
+  ReviewerChanged
+  PriorityChanged
+  ProgressUpdated
+  CommentAdded
+  AttachmentAdded
+  TaskCreated
+  TaskUpdated
+  ProjectCreated
+  ProjectUpdated
+  MemberAdded
+  MemberRemoved
+  TimeLogged
+  FieldUpdated
+}
+
+enum NotificationType {
+  TaskAssigned
+  TaskStatusChanged
+  CommentAdded
+  DeadlineApproaching
+  ReviewRequested
+  MentionedInComment
+  ProjectMemberAdded
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(User)
+  department   String?
+  designation  String?
+  phone        String?
+  avatarUrl    String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  managedProjects        Project[]      @relation("ProjectManager")
+  projectMemberships     ProjectMember[]
+  assignedTasks          Task[]         @relation("TaskAssignee")
+  reportedTasks          Task[]         @relation("TaskReporter")
+  reviewingTasks         Task[]         @relation("TaskReviewer")
+  timeLogs               TimeLog[]
+  activities             Activity[]
+  comments               Comment[]
+  attachments            Attachment[]
+  notifications          Notification[] @relation("NotificationRecipient")
+  triggeredNotifications Notification[] @relation("NotificationTrigger")
+
+  @@map("users")
+}
+
+model Project {
+  id          Int           @id @default(autoincrement())
+  name        String
+  description String?
+  clientName  String?
+  startDate   DateTime?
+  endDate     DateTime?
+  status      ProjectStatus @default(Planning)
+  priority    Priority      @default(Medium)
+  managerId   Int
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  manager     User            @relation("ProjectManager", fields: [managerId], references: [id])
+  members     ProjectMember[]
+  tasks       Task[]
+  attachments Attachment[]
+  activities  Activity[]
+
+  @@map("projects")
+}
+
+model ProjectMember {
+  id        Int      @id @default(autoincrement())
+  projectId Int
+  userId    Int
+  joinedAt  DateTime @default(now())
+
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@map("project_members")
+}
+
+model Task {
+  id              Int        @id @default(autoincrement())
+  projectId       Int
+  title           String
+  description     String?
+  type            TaskType   @default(Task)
+  status          TaskStatus @default(New)
+  priority        Priority   @default(Medium)
+  assigneeId      Int?
+  reporterId      Int
+  reviewerId      Int?
+  progressPercent Int        @default(0)
+  estimatedHours  Float?
+  timeSpentHours  Float      @default(0)
+  startDate       DateTime?
+  dueDate         DateTime?
+  closedAt        DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignee    User?        @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  reporter    User         @relation("TaskReporter", fields: [reporterId], references: [id])
+  reviewer    User?        @relation("TaskReviewer", fields: [reviewerId], references: [id])
+  timeLogs    TimeLog[]
+  comments    Comment[]
+  attachments Attachment[]
+  activities  Activity[]
+  notifications Notification[]
+
+  @@map("tasks")
+}
+
+model TimeLog {
+  id          Int         @id @default(autoincrement())
+  taskId      Int
+  userId      Int
+  hours       Float
+  category    LogCategory @default(Development)
+  description String?
+  logDate     DateTime    @default(now())
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  task        Task        @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id])
+
+  @@map("time_logs")
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  taskId    Int
+  authorId  Int
+  body      String
+  isEdited  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  author    User     @relation(fields: [authorId], references: [id])
+
+  @@map("comments")
+}
+
+model Attachment {
+  id           Int      @id @default(autoincrement())
+  filename     String
+  originalName String
+  mimeType     String
+  sizeBytes    Int
+  storagePath  String
+  uploaderId   Int
+  taskId       Int?
+  projectId    Int?
+  createdAt    DateTime @default(now())
+
+  uploader  User     @relation(fields: [uploaderId], references: [id])
+  task      Task?    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("attachments")
+}
+
+model Activity {
+  id          Int            @id @default(autoincrement())
+  entityType  String
+  entityId    Int
+  action      ActivityAction
+  actorId     Int
+  oldValue    String?
+  newValue    String?
+  fieldName   String?
+  description String?
+  createdAt   DateTime       @default(now())
+
+  actor    User     @relation(fields: [actorId], references: [id])
+  task     Task?    @relation(fields: [entityId], references: [id], map: "activity_task_fk")
+  project  Project? @relation(fields: [entityId], references: [id], map: "activity_project_fk")
+
+  @@map("activities")
+}
+
+model Notification {
+  id          Int              @id @default(autoincrement())
+  recipientId Int
+  triggeredBy Int?
+  type        NotificationType
+  title       String
+  body        String
+  taskId      Int?
+  isRead      Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+
+  recipient User  @relation("NotificationRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  trigger   User? @relation("NotificationTrigger", fields: [triggeredBy], references: [id])
+  task      Task? @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}

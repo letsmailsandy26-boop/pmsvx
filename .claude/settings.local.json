@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/user/OneDrive/Desktop/pms/client/src/pages/**)",
+      "Read(//c/Users/user/OneDrive/Desktop/pms/client/src/components/**)",
+      "Bash(psql --version)",
+      "Bash(cmd /c \"netsh int ipv4 show excludedportrange protocol=tcp 2>&1\")",
+      "Bash(cmd /c \"netsh int ipv4 show excludedportrange protocol=tcp\")",
+      "Bash(npx ts-node:*)",
+      "Read(//tmp/**)"
+    ]
+  }
+}
