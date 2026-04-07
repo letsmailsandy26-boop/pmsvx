@@ -125,7 +125,6 @@ model Project {
   members     ProjectMember[]
   tasks       Task[]
   attachments Attachment[]
-  activities  Activity[]
 
   @@map("projects")
 }
@@ -170,7 +169,6 @@ model Task {
   timeLogs    TimeLog[]
   comments    Comment[]
   attachments Attachment[]
-  activities  Activity[]
   notifications Notification[]
 
   @@map("tasks")
@@ -188,7 +186,7 @@ model TimeLog {
   updatedAt   DateTime    @updatedAt
 
   task        Task        @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  user        User        @relation(fields: [userId], references: [id])
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("time_logs")
 }
@@ -203,7 +201,7 @@ model Comment {
   updatedAt DateTime @updatedAt
 
   task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  author    User     @relation(fields: [authorId], references: [id])
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
   @@map("comments")
 }
@@ -239,9 +237,7 @@ model Activity {
   description String?
   createdAt   DateTime       @default(now())
 
-  actor    User     @relation(fields: [actorId], references: [id])
-  task     Task?    @relation(fields: [entityId], references: [id], map: "activity_task_fk")
-  project  Project? @relation(fields: [entityId], references: [id], map: "activity_project_fk")
+  actor    User     @relation(fields: [actorId], references: [id], onDelete: Cascade)
 
   @@map("activities")
 }

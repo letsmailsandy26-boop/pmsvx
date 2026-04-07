@@ -49,7 +49,11 @@ export const usersService = {
   },
 
   async delete(id: number) {
-    await prisma.user.update({ where: { id }, data: { isActive: false } });
+    // Nullify FK references before deleting
+    await prisma.task.updateMany({ where: { assigneeId: id }, data: { assigneeId: null } });
+    await prisma.task.updateMany({ where: { reviewerId: id }, data: { reviewerId: null } });
+    await prisma.project.updateMany({ where: { managerId: id }, data: { managerId: 1 } });
+    await prisma.user.delete({ where: { id } });
   },
 
   async updateAvatar(id: number, avatarUrl: string) {

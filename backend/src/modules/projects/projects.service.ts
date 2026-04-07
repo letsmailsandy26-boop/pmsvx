@@ -68,6 +68,13 @@ export const projectsService = {
   },
 
   async delete(id: number) {
+    // Delete activities first (no cascade on entityId)
+    await prisma.activity.deleteMany({ where: { entityType: 'Project', entityId: id } });
+    const tasks = await prisma.task.findMany({ where: { projectId: id }, select: { id: true } });
+    const taskIds = tasks.map(t => t.id);
+    if (taskIds.length > 0) {
+      await prisma.activity.deleteMany({ where: { entityType: 'Task', entityId: { in: taskIds } } });
+    }
     await prisma.project.delete({ where: { id } });
   },
 
