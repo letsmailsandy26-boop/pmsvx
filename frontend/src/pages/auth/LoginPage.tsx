@@ -30,7 +30,7 @@ export function LoginPage() {
             <span className="text-white text-base font-bold leading-none">P</span>
           </div>
           <div>
-            <p className="text-white text-sm font-semibold leading-none">OpenProject</p>
+            <p className="text-white text-sm font-semibold leading-none">Vibexio</p>
             <p className="text-op-sidebar-text/50 text-[10px] mt-0.5">Project Management</p>
           </div>
         </div>
