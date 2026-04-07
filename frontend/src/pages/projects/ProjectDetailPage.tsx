@@ -261,7 +261,7 @@ export function ProjectDetailPage() {
                 )}
                 {tasks?.data?.map((t: Task) => (
                   <tr key={t.id}>
-                    <td className="text-op-muted text-[10px]">{t.id}</td>
+                    <td className="text-op-muted text-[10px]">VX-{t.id}</td>
                     <td>
                       <Link to={`/tasks/${t.id}`} className="text-op-primary hover:underline font-medium">
                         {t.title}

@@ -117,7 +117,7 @@ export function TasksPage() {
             <tbody>
               {data?.data?.map((task: Task) => (
                 <tr key={task.id}>
-                  <td className="text-op-muted text-[10px]">{task.id}</td>
+                  <td className="text-op-muted text-[10px]">VX-{task.id}</td>
                   <td>
                     <div className="flex items-center gap-1.5">
                       <Badge value={task.type} />

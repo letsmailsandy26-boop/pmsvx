@@ -111,7 +111,7 @@ export function TaskDetailPage() {
           <Link to={`/projects/${task.projectId}`} style={S.crumbLink}>{task.project.name}</Link>
           <ChevronRight size={11} />
         </>}
-        <span style={{ color:'#555' }}>#{task.id}</span>
+        <span style={{ color:'#555' }}>VX-{task.id}</span>
       </div>
 
       {/* Title bar */}
@@ -120,7 +120,7 @@ export function TaskDetailPage() {
           <div>
             <div style={S.titleMeta}>
               <Badge value={task.type} />
-              <span style={{ color:'#777', fontSize:12 }}>#{task.id}</span>
+              <span style={{ color:'#777', fontSize:12 }}>VX-{task.id}</span>
               <Badge value={task.priority} />
             </div>
             <h1 style={S.titleText}>{task.title}</h1>
