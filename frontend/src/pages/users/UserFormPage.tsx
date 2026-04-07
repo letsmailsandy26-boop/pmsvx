@@ -125,11 +125,16 @@ export function UserFormPage() {
             </div>
             <div>
               <label className="label">Department</label>
-              <input
+              <select
                 className="input"
                 value={form.department}
                 onChange={(e) => setForm((f) => ({ ...f, department: e.target.value }))}
-              />
+              >
+                <option value="">Select department</option>
+                {['Management', 'Development', 'AI', 'QA', 'HR', 'IT Department', 'UI/UX'].map((d) => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="label">Designation</label>
