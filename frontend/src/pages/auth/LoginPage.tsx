@@ -5,8 +5,8 @@ import { useAuth } from '../../contexts/AuthContext'
 export function LoginPage() {
   const { login, isLoading } = useAuth()
   const navigate = useNavigate()
-  const [email, setEmail] = useState('admin@pms.com')
-  const [password, setPassword] = useState('admin123')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
 
   const handleSubmit = async (e: FormEvent) => {
@@ -79,18 +79,6 @@ export function LoginPage() {
               {isLoading ? 'Signing in...' : 'Sign in'}
             </button>
           </form>
-          <div className="px-6 pb-5">
-            <div className="border border-op-border rounded p-3 bg-op-primary-light">
-              <p className="text-[10px] font-semibold text-op-primary uppercase tracking-wide mb-1.5">
-                Demo credentials
-              </p>
-              <div className="space-y-0.5 text-[11px] text-op-text">
-                <p><span className="text-op-muted">Admin:</span> admin@pms.com / admin123</p>
-                <p><span className="text-op-muted">Manager:</span> manager@pms.com / manager123</p>
-                <p><span className="text-op-muted">User:</span> john@pms.com / user123</p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
