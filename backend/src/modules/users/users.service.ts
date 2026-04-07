@@ -43,8 +43,19 @@ export const usersService = {
     return user;
   },
 
-  async update(id: number, data: { name?: string; email?: string; role?: Role; department?: string; designation?: string; phone?: string; isActive?: boolean }) {
-    const user = await prisma.user.update({ where: { id }, data, select: userSelect });
+  async update(id: number, data: { name?: string; email?: string; password?: string; role?: Role; department?: string; designation?: string; phone?: string; isActive?: boolean }) {
+    const updateData: Record<string, unknown> = {};
+    if (data.name !== undefined) updateData.name = data.name;
+    if (data.email !== undefined) updateData.email = data.email;
+    if (data.role !== undefined) updateData.role = data.role;
+    if (data.department !== undefined) updateData.department = data.department;
+    if (data.designation !== undefined) updateData.designation = data.designation;
+    if (data.phone !== undefined) updateData.phone = data.phone;
+    if (data.isActive !== undefined) updateData.isActive = data.isActive;
+    if (data.password && data.password.trim() !== '') {
+      updateData.passwordHash = await bcrypt.hash(data.password, 10);
+    }
+    const user = await prisma.user.update({ where: { id }, data: updateData, select: userSelect });
     return user;
   },
 

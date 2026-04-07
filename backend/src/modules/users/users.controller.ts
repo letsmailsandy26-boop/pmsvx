@@ -29,7 +29,7 @@ export const updateUser = asyncHandler(async (req: AuthRequest, res: Response) =
 
 export const deleteUser = asyncHandler(async (req: AuthRequest, res: Response) => {
   await usersService.delete(parseInt(req.params.id));
-  sendSuccess(res, null, 'User deactivated');
+  sendSuccess(res, null, 'User deleted');
 });
 
 export const uploadAvatar = asyncHandler(async (req: AuthRequest, res: Response) => {
