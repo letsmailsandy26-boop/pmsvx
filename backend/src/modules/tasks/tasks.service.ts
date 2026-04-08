@@ -25,11 +25,7 @@ export const tasksService = {
       { description: { contains: query.search, mode: 'insensitive' } },
     ];
     if (query.role === 'User') {
-      where.AND = [
-        { OR: [{ assigneeId: query.userId }, { reporterId: query.userId }, { reviewerId: query.userId }] },
-        ...(query.search ? [{ OR: where.OR as object[] }] : []),
-      ];
-      if (query.search) delete where.OR;
+      where.project = { members: { some: { userId: query.userId } } };
     }
     const [tasks, total] = await Promise.all([
       prisma.task.findMany({ where, include: taskInclude, skip, take, orderBy: { createdAt: 'desc' } }),
