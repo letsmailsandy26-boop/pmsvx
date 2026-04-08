@@ -29,7 +29,11 @@ export const commentsService = {
   },
 
   async update(id: number, authorId: number, body: string) {
-    return prisma.comment.updateMany({ where: { id, authorId }, data: { body, isEdited: true } });
+    await prisma.comment.updateMany({ where: { id, authorId }, data: { body, isEdited: true } });
+    return prisma.comment.findUnique({
+      where: { id },
+      include: { author: { select: { id: true, name: true, avatarUrl: true } } },
+    });
   },
 
   async delete(id: number, userId: number, role: string) {

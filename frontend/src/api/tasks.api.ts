@@ -18,6 +18,8 @@ export const tasksApi = {
   // Comments
   addComment: (id: number, body: string) =>
     client.post(`/tasks/${id}/comments`, { body }).then((r) => r.data.data),
+  updateComment: (taskId: number, commentId: number, body: string) =>
+    client.patch(`/tasks/${taskId}/comments/${commentId}`, { body }).then((r) => r.data.data),
   deleteComment: (taskId: number, commentId: number) =>
     client.delete(`/tasks/${taskId}/comments/${commentId}`),
   // Time logs

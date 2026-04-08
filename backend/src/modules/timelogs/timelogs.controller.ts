@@ -22,8 +22,8 @@ export const createTimeLog = asyncHandler(async (req: AuthRequest, res: Response
 });
 
 export const updateTimeLog = asyncHandler(async (req: AuthRequest, res: Response) => {
-  await timelogsService.update(parseInt(req.params.logId), req.user!.id, req.body);
-  sendSuccess(res, null, 'Time log updated');
+  const updated = await timelogsService.update(parseInt(req.params.logId), req.user!.id, req.body);
+  sendSuccess(res, updated, 'Time log updated');
 });
 
 export const deleteTimeLog = asyncHandler(async (req: AuthRequest, res: Response) => {

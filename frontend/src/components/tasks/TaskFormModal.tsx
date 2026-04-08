@@ -28,7 +28,7 @@ export function TaskFormModal({ taskId, onClose }: TaskFormModalProps) {
 
   const { data: usersData } = useQuery({
     queryKey: ['users', 'all'],
-    queryFn: () => usersApi.list({ limit: 100 }),
+    queryFn: () => usersApi.list({ limit: 100, isActive: 'true' }),
   })
 
   const [form, setForm] = useState({

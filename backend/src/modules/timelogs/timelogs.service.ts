@@ -42,10 +42,12 @@ export const timelogsService = {
     const existing = await prisma.timeLog.findFirst({ where: { id, userId } });
     if (!existing) throw Object.assign(new Error('Time log not found'), { statusCode: 404 });
     const diff = (data.hours || existing.hours) - existing.hours;
-    await prisma.$transaction([
-      prisma.timeLog.update({ where: { id }, data }),
-      prisma.task.update({ where: { id: existing.taskId }, data: { timeSpentHours: { increment: diff } } }),
-    ]);
+    const updated = await prisma.$transaction(async (tx) => {
+      const log = await tx.timeLog.update({ where: { id }, data, include: { user: { select: { id: true, name: true } } } });
+      await tx.task.update({ where: { id: existing.taskId }, data: { timeSpentHours: { increment: diff } } });
+      return log;
+    });
+    return updated;
   },
 
   async delete(id: number, userId: number, role: string) {
