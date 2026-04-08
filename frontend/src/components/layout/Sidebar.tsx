@@ -24,7 +24,7 @@ const mainNav = [
   { to: '/tasks',         icon: CheckSquare,     label: 'All Work Packages',  roles: ['Admin','Manager','User'] },
   { to: '/timelogs',      icon: Clock,           label: 'Time Logs',          roles: ['Admin','Manager','User'] },
   { to: '/reports',       icon: BarChart2,       label: 'Reports',            roles: ['Admin','Manager','User'] },
-  { to: '/users',         icon: Users,           label: 'Users',              roles: ['Admin','Manager','User'] },
+  { to: '/users',         icon: Users,           label: 'Users',              roles: ['Admin','Manager'] },
   { to: '/notifications', icon: Bell,            label: 'Notifications',      roles: ['Admin','Manager','User'] },
 ]
 

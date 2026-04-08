@@ -10,12 +10,12 @@ const router = Router();
 router.use(authenticateToken);
 
 router.get('/', listUsers);
-router.post('/', createUser);
+router.post('/', authorizeRoles('Admin', 'Manager'), createUser);
 router.get('/me/tasks', getMyTasks);
 router.get('/me/timelogs', getMyTimeLogs);
 router.get('/:id', getUserById);
-router.patch('/:id', updateUser);
-router.delete('/:id', deleteUser);
+router.patch('/:id', authorizeRoles('Admin', 'Manager'), updateUser);
+router.delete('/:id', authorizeRoles('Admin', 'Manager'), deleteUser);
 router.post('/:id/avatar', avatarUpload.single('avatar'), uploadAvatar);
 
 export default router;

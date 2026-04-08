@@ -11,8 +11,11 @@ import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { formatDate } from '../../utils/formatDate'
 import { User } from '../../types'
 import { cn } from '../../utils/cn'
+import { useAuth } from '../../contexts/AuthContext'
 
 export function UsersPage() {
+  const { user: currentUser } = useAuth()
+  const canManage = currentUser?.role === 'Admin' || currentUser?.role === 'Manager'
   const qc = useQueryClient()
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
@@ -45,9 +48,11 @@ export function UsersPage() {
               onChange={(e) => { setSearch(e.target.value); setPage(1) }}
             />
           </div>
-          <Link to="/users/new" className="btn-primary">
-            <Plus className="h-3.5 w-3.5" /> Add user
-          </Link>
+          {canManage && (
+            <Link to="/users/new" className="btn-primary">
+              <Plus className="h-3.5 w-3.5" /> Add user
+            </Link>
+          )}
         </div>
       </div>
 
@@ -63,7 +68,7 @@ export function UsersPage() {
                 <th>Department</th>
                 <th>Status</th>
                 <th>Joined</th>
-                <th />
+                {canManage && <th />}
               </tr>
             </thead>
             <tbody>
@@ -91,19 +96,21 @@ export function UsersPage() {
                     </span>
                   </td>
                   <td className="text-op-muted">{formatDate(user.createdAt)}</td>
-                  <td>
-                    <div className="flex items-center gap-1 justify-end">
-                      <Link to={`/users/${user.id}/edit`} className="btn-ghost btn-sm">
-                        <Pencil className="h-3.5 w-3.5" />
-                      </Link>
-                      <button
-                        onClick={() => setDeleteId(user.id)}
-                        className="btn-ghost btn-sm text-op-muted hover:text-red-600"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  </td>
+                  {canManage && (
+                    <td>
+                      <div className="flex items-center gap-1 justify-end">
+                        <Link to={`/users/${user.id}/edit`} className="btn-ghost btn-sm">
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Link>
+                        <button
+                          onClick={() => setDeleteId(user.id)}
+                          className="btn-ghost btn-sm text-op-muted hover:text-red-600"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
