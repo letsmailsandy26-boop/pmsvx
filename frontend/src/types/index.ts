@@ -56,7 +56,7 @@ export interface Task {
   createdAt: string
   updatedAt: string
   project?: { id: number; name: string }
-  assignee?: { id: number; name: string; avatarUrl?: string }
+  assignee?: { id: number; name: string; avatarUrl?: string; department?: string }
   reporter?: { id: number; name: string; avatarUrl?: string }
   reviewer?: { id: number; name: string; avatarUrl?: string }
   comments?: Comment[]

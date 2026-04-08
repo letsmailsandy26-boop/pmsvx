@@ -232,58 +232,82 @@ export function ProjectDetailPage() {
         )}
 
         {/* Tasks */}
-        {tab === 'Tasks' && (
-          <div className="op-panel overflow-hidden">
-            <div className="op-panel-header">
-              <span className="op-panel-title">Work packages ({tasks?.pagination?.total || 0})</span>
-              <Link to={`/tasks?projectId=${id}`} className="btn-secondary btn-sm">
-                View all
-              </Link>
+        {tab === 'Tasks' && (() => {
+          const allTasks: Task[] = tasks?.data || []
+          // Group by assignee department
+          const groups: Record<string, Task[]> = {}
+          allTasks.forEach((t) => {
+            const dept = t.assignee?.department || 'Unassigned'
+            if (!groups[dept]) groups[dept] = []
+            groups[dept].push(t)
+          })
+          const deptOrder = Object.keys(groups).sort((a, b) =>
+            a === 'Unassigned' ? 1 : b === 'Unassigned' ? -1 : a.localeCompare(b)
+          )
+          return (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-op-muted font-medium">
+                  {tasks?.pagination?.total || 0} work packages
+                </span>
+                <Link to={`/tasks?projectId=${id}`} className="btn-secondary btn-sm">
+                  View all
+                </Link>
+              </div>
+              {allTasks.length === 0 && (
+                <div className="op-panel py-12 text-center text-op-muted text-sm">No tasks yet.</div>
+              )}
+              {deptOrder.map((dept) => (
+                <div key={dept} className="op-panel overflow-hidden">
+                  <div className="flex items-center gap-2 px-4 py-2.5 bg-op-bg border-b border-op-border">
+                    <span className="w-2 h-2 rounded-full bg-op-primary flex-shrink-0" />
+                    <span className="text-xs font-semibold text-op-text">{dept}</span>
+                    <span className="text-[10px] bg-op-border text-op-muted px-1.5 rounded-full font-medium">
+                      {groups[dept].length}
+                    </span>
+                  </div>
+                  <table className="op-table">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Subject</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Assignee</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {groups[dept].map((t) => (
+                        <tr key={t.id}>
+                          <td className="text-op-muted text-[10px]">VX-{t.id}</td>
+                          <td>
+                            <Link to={`/tasks/${t.id}`} className="text-op-primary hover:underline font-medium">
+                              {t.title}
+                            </Link>
+                          </td>
+                          <td><Badge value={t.type} /></td>
+                          <td><Badge value={t.status} /></td>
+                          <td><Badge value={t.priority} /></td>
+                          <td>
+                            {t.assignee ? (
+                              <div className="flex items-center gap-1.5">
+                                <Avatar name={t.assignee.name} src={t.assignee.avatarUrl} size="sm" />
+                                <span className="text-[11px]">{t.assignee.name}</span>
+                              </div>
+                            ) : (
+                              <span className="text-op-muted text-xs">—</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ))}
             </div>
-            <table className="op-table">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Subject</th>
-                  <th>Type</th>
-                  <th>Status</th>
-                  <th>Priority</th>
-                  <th>Assignee</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tasks?.data?.length === 0 && (
-                  <tr>
-                    <td colSpan={6} className="text-center py-8 text-op-muted">No tasks yet.</td>
-                  </tr>
-                )}
-                {tasks?.data?.map((t: Task) => (
-                  <tr key={t.id}>
-                    <td className="text-op-muted text-[10px]">VX-{t.id}</td>
-                    <td>
-                      <Link to={`/tasks/${t.id}`} className="text-op-primary hover:underline font-medium">
-                        {t.title}
-                      </Link>
-                    </td>
-                    <td><Badge value={t.type} /></td>
-                    <td><Badge value={t.status} /></td>
-                    <td><Badge value={t.priority} /></td>
-                    <td>
-                      {t.assignee ? (
-                        <div className="flex items-center gap-1.5">
-                          <Avatar name={t.assignee.name} src={t.assignee.avatarUrl} size="sm" />
-                          <span className="text-[11px]">{t.assignee.name}</span>
-                        </div>
-                      ) : (
-                        <span className="text-op-muted text-xs">—</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+          )
+        })()}
 
         {/* Members */}
         {tab === 'Members' && (

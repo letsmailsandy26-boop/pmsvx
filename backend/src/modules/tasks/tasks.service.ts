@@ -6,7 +6,7 @@ import { notificationsService } from '../notifications/notifications.service';
 
 const taskInclude = {
   project: { select: { id: true, name: true } },
-  assignee: { select: { id: true, name: true, avatarUrl: true } },
+  assignee: { select: { id: true, name: true, avatarUrl: true, department: true } },
   reporter: { select: { id: true, name: true, avatarUrl: true } },
   reviewer: { select: { id: true, name: true, avatarUrl: true } },
 };
