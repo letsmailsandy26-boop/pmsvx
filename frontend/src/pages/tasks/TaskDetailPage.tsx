@@ -70,6 +70,9 @@ export function TaskDetailPage() {
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [showTimeLog, setShowTimeLog] = useState(false)
   const [showEdit, setShowEdit] = useState(false)
+  const [deleteCommentId, setDeleteCommentId] = useState<number | null>(null)
+  const [deleteLogId, setDeleteLogId] = useState<number | null>(null)
+  const [deleteAttachId, setDeleteAttachId] = useState<number | null>(null)
 
   const { data: task, isLoading } = useQuery({
     queryKey: ['tasks', taskId],
@@ -195,7 +198,7 @@ export function TaskDetailPage() {
                         <p style={S.commentBody}>{c.body}</p>
                       </div>
                       {(c.authorId === user?.id || user?.role === 'Admin') && (
-                        <button onClick={() => delCommentMut.mutate(c.id)}
+                        <button onClick={() => setDeleteCommentId(c.id)}
                           style={{ background:'none', border:'none', cursor:'pointer', color:'#BBBBBB', padding:'0 2px', lineHeight:1 }}
                           onMouseOver={e => (e.currentTarget.style.color = '#dc2626')}
                           onMouseOut={e => (e.currentTarget.style.color = '#BBBBBB')}>
@@ -274,7 +277,7 @@ export function TaskDetailPage() {
                         <td style={{ padding:'8px 14px', color:'#888', maxWidth:180, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{log.description || '—'}</td>
                         <td style={{ padding:'8px 14px' }}>
                           {(log.userId === user?.id || user?.role === 'Admin') && (
-                            <button onClick={() => delLogMut.mutate(log.id)}
+                            <button onClick={() => setDeleteLogId(log.id)}
                               style={{ background:'none', border:'none', cursor:'pointer', color:'#BBBBBB' }}
                               onMouseOver={e => (e.currentTarget.style.color='#dc2626')}
                               onMouseOut={e => (e.currentTarget.style.color='#BBBBBB')}>
@@ -308,12 +311,26 @@ export function TaskDetailPage() {
                       <p style={{ fontSize:13, fontWeight:500, color:'#333', margin:0, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{a.originalName}</p>
                       <p style={{ fontSize:11, color:'#666', margin:'2px 0 0' }}>{(a.sizeBytes/1024).toFixed(1)} KB · {a.uploader?.name}</p>
                     </div>
-                    <a href={`/api/attachments/${a.id}/download`} target="_blank" rel="noreferrer"
-                      style={{ padding:'4px 8px', fontSize:12, color:'#888', background:'none', border:'1px solid #E0E0E0', borderRadius:3, textDecoration:'none', display:'flex', alignItems:'center', gap:4 }}>
+                    <button
+                      onClick={() => {
+                        const apiUrl = import.meta.env.VITE_API_URL || '/api'
+                        const token = localStorage.getItem('token')
+                        fetch(`${apiUrl}/attachments/${a.id}/download`, {
+                          headers: { Authorization: `Bearer ${token}` },
+                        }).then(r => r.blob()).then(blob => {
+                          const url = URL.createObjectURL(blob)
+                          const link = document.createElement('a')
+                          link.href = url
+                          link.download = a.originalName
+                          link.click()
+                          URL.revokeObjectURL(url)
+                        })
+                      }}
+                      style={{ padding:'4px 8px', fontSize:12, color:'#888', background:'none', border:'1px solid #E0E0E0', borderRadius:3, cursor:'pointer', display:'flex', alignItems:'center', gap:4 }}>
                       <Download size={13} />
-                    </a>
+                    </button>
                     {(a.uploaderId === user?.id || user?.role === 'Admin') && (
-                      <button onClick={() => delAttachMut.mutate(a.id)}
+                      <button onClick={() => setDeleteAttachId(a.id)}
                         style={{ background:'none', border:'none', cursor:'pointer', color:'#BBBBBB', padding:'4px' }}
                         onMouseOver={e => (e.currentTarget.style.color='#dc2626')}
                         onMouseOut={e => (e.currentTarget.style.color='#BBBBBB')}>
@@ -476,6 +493,15 @@ export function TaskDetailPage() {
       <ConfirmDialog isOpen={deleteOpen} onClose={() => setDeleteOpen(false)}
         onConfirm={() => deleteMutation.mutate()} isLoading={deleteMutation.isPending}
         message="Delete this work package permanently?" />
+      <ConfirmDialog isOpen={!!deleteCommentId} onClose={() => setDeleteCommentId(null)}
+        onConfirm={() => { if (deleteCommentId) delCommentMut.mutate(deleteCommentId); setDeleteCommentId(null) }}
+        isLoading={delCommentMut.isPending} message="Delete this comment?" />
+      <ConfirmDialog isOpen={!!deleteLogId} onClose={() => setDeleteLogId(null)}
+        onConfirm={() => { if (deleteLogId) delLogMut.mutate(deleteLogId); setDeleteLogId(null) }}
+        isLoading={delLogMut.isPending} message="Delete this time log?" />
+      <ConfirmDialog isOpen={!!deleteAttachId} onClose={() => setDeleteAttachId(null)}
+        onConfirm={() => { if (deleteAttachId) delAttachMut.mutate(deleteAttachId); setDeleteAttachId(null) }}
+        isLoading={delAttachMut.isPending} message="Delete this attachment?" />
     </div>
   )
 }
