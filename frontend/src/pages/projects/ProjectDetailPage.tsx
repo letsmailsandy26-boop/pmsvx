@@ -90,7 +90,7 @@ export function ProjectDetailPage() {
     <div className="p-6 text-op-muted text-sm">Project not found.</div>
   )
 
-  const isManagerOrAdmin = true
+  const canManageProject = user?.role === 'Admin' || user?.role === 'Manager'
 
   return (
     <div className="flex flex-col h-full">
@@ -114,19 +114,19 @@ export function ProjectDetailPage() {
             <Badge value={project.status} />
             {project.priority && <Badge value={project.priority} />}
           </div>
-          {isManagerOrAdmin && (
-            <div className="flex items-center gap-1.5">
-              <Link to={`/projects/${id}/edit`} className="btn-secondary btn-sm">
-                <Pencil className="h-3.5 w-3.5" /> Edit
-              </Link>
+          <div className="flex items-center gap-1.5">
+            <Link to={`/projects/${id}/edit`} className="btn-secondary btn-sm">
+              <Pencil className="h-3.5 w-3.5" /> Edit
+            </Link>
+            {canManageProject && (
               <button
                 onClick={() => setDeleteOpen(true)}
                 className="btn-ghost btn-sm text-op-muted hover:text-red-600"
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
 
@@ -288,7 +288,7 @@ export function ProjectDetailPage() {
         {/* Members */}
         {tab === 'Members' && (
           <div className="op-panel overflow-hidden">
-            {isManagerOrAdmin && (
+            {canManageProject && (
               <div className="op-panel-header">
                 <div className="flex items-center gap-2">
                   <select
@@ -319,7 +319,7 @@ export function ProjectDetailPage() {
                   <th>Name</th>
                   <th>Role</th>
                   <th>Email</th>
-                  {isManagerOrAdmin && <th />}
+                  {canManageProject && <th />}
                 </tr>
               </thead>
               <tbody>
@@ -338,7 +338,7 @@ export function ProjectDetailPage() {
                     </td>
                     <td><Badge value={m.user.role} /></td>
                     <td className="text-op-muted">{m.user.email}</td>
-                    {isManagerOrAdmin && (
+                    {canManageProject && (
                       <td>
                         <button
                           onClick={() => removeMemberMutation.mutate(m.userId)}
@@ -386,15 +386,26 @@ export function ProjectDetailPage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-1">
-                    <a
-                      href={`/api/attachments/${a.id}/download`}
+                    <button
                       className="btn-ghost btn-sm"
-                      target="_blank"
-                      rel="noreferrer"
+                      onClick={() => {
+                        const apiUrl = import.meta.env.VITE_API_URL || '/api'
+                        const token = localStorage.getItem('token')
+                        fetch(`${apiUrl}/attachments/${a.id}/download`, {
+                          headers: { Authorization: `Bearer ${token}` },
+                        }).then(r => r.blob()).then(blob => {
+                          const url = URL.createObjectURL(blob)
+                          const link = document.createElement('a')
+                          link.href = url
+                          link.download = a.originalName
+                          link.click()
+                          URL.revokeObjectURL(url)
+                        })
+                      }}
                     >
                       <Download className="h-3.5 w-3.5" />
-                    </a>
-                    {isManagerOrAdmin && (
+                    </button>
+                    {canManageProject && (
                       <button
                         className="btn-ghost btn-sm text-op-muted hover:text-red-500"
                         onClick={() => deleteAttachmentMutation.mutate(a.id)}

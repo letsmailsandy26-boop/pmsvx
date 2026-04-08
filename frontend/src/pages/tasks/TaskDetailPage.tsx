@@ -92,7 +92,7 @@ export function TaskDetailPage() {
   if (isLoading) return <div style={{ display:'flex', justifyContent:'center', padding:64 }}><Spinner /></div>
   if (!task)    return <div style={{ padding:24, color:'#555' }}>Work package not found.</div>
 
-  const isManagerOrAdmin = true
+  const isManagerOrAdmin = user?.role === 'Admin' || user?.role === 'Manager'
   const canEdit = true
   const overdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'Closed'
 

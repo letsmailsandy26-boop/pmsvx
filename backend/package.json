@@ -5,7 +5,7 @@
     "dev": "nodemon",
     "build": "tsc",
     "start": "node dist/app.js",
-    "deploy": "prisma generate && prisma migrate deploy && npm run build && npm run start",
+    "deploy": "prisma generate && prisma migrate deploy && npm run db:seed && npm run build && npm run start",
     "db:migrate": "prisma migrate dev",
     "db:seed": "ts-node prisma/seed.ts",
     "db:studio": "prisma studio"

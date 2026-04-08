@@ -12,7 +12,7 @@ router.get('/', listTasks);
 router.post('/', createTask);
 router.get('/:id', getTask);
 router.patch('/:id', updateTask);
-router.delete('/:id', deleteTask);
+router.delete('/:id', authorizeRoles('Admin', 'Manager'), deleteTask);
 router.patch('/:id/status', changeStatus);
 router.patch('/:id/progress', updateProgress);
 router.patch('/:id/assign', reassignTask);
