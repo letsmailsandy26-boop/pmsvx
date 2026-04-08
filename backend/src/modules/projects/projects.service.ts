@@ -10,7 +10,7 @@ const projectInclude = {
 };
 
 export const projectsService = {
-  async list(query: { page?: string; limit?: string; status?: string; search?: string; userId?: number; role?: string }) {
+  async list(query: { page?: string; limit?: string; status?: string; search?: string; userId?: number; role?: string; allProjects?: string }) {
     const { page, limit, skip, take } = getPagination(query.page, query.limit);
     const where: Record<string, unknown> = {};
     if (query.status) where.status = query.status as ProjectStatus;
@@ -18,7 +18,7 @@ export const projectsService = {
       { name: { contains: query.search, mode: 'insensitive' } },
       { description: { contains: query.search, mode: 'insensitive' } },
     ];
-    if (query.role === 'User') {
+    if (query.role === 'User' && query.allProjects !== 'true') {
       where.members = { some: { userId: query.userId } };
     }
     const [projects, total] = await Promise.all([

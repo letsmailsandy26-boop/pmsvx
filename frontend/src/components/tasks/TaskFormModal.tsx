@@ -23,7 +23,7 @@ export function TaskFormModal({ taskId, onClose }: TaskFormModalProps) {
 
   const { data: projectsData } = useQuery({
     queryKey: ['projects', 'all'],
-    queryFn: () => projectsApi.list({ limit: 100 }),
+    queryFn: () => projectsApi.list({ limit: 100, allProjects: 'true' }),
   })
 
   const { data: usersData } = useQuery({
