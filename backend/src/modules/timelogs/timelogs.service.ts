@@ -12,14 +12,22 @@ export const timelogsService = {
     });
   },
 
-  async listAll(query: { page?: string; limit?: string; userId?: number; role?: string; projectId?: string; category?: string }) {
+  async listAll(query: { page?: string; limit?: string; userId?: number; role?: string; projectId?: string; category?: string; filterUserId?: string }) {
     const { page, limit, skip, take } = getPagination(query.page, query.limit);
     const where: Record<string, unknown> = {};
     if (query.role === 'User') where.userId = query.userId;
+    if (query.filterUserId) where.userId = parseInt(query.filterUserId);
     if (query.category) where.category = query.category as LogCategory;
     if (query.projectId) where.task = { projectId: parseInt(query.projectId) };
     const [logs, total] = await Promise.all([
-      prisma.timeLog.findMany({ where, include: { user: { select: { id: true, name: true } }, task: { select: { id: true, title: true, projectId: true } } }, skip, take, orderBy: { logDate: 'desc' } }),
+      prisma.timeLog.findMany({
+        where,
+        include: {
+          user: { select: { id: true, name: true, department: true } },
+          task: { select: { id: true, title: true, project: { select: { id: true, name: true } } } },
+        },
+        skip, take, orderBy: { logDate: 'desc' },
+      }),
       prisma.timeLog.count({ where }),
     ]);
     return { logs, total, page, limit };

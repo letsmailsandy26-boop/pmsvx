@@ -21,4 +21,6 @@ export const usersApi = {
   myTasks: () => client.get('/users/me/tasks').then((r) => r.data.data),
   myTimeLogs: (params?: Record<string, unknown>) =>
     client.get('/users/me/timelogs', { params }).then((r) => r.data),
+  allTimeLogs: (params?: Record<string, unknown>) =>
+    client.get('/timelogs', { params }).then((r) => r.data),
 }

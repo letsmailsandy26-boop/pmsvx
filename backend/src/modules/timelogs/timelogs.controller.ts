@@ -10,7 +10,7 @@ export const listTaskTimeLogs = asyncHandler(async (req: AuthRequest, res: Respo
 });
 
 export const listAllTimeLogs = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const result = await timelogsService.listAll({ ...req.query as Record<string, string>, userId: req.user!.id, role: req.user!.role });
+  const result = await timelogsService.listAll({ ...(req.query as Record<string, string>), userId: req.user!.id, role: req.user!.role });
   sendPaginated(res, result.logs, result.total, result.page, result.limit);
 });
 
