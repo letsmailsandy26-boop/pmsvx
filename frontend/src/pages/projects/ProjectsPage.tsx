@@ -46,7 +46,7 @@ export function ProjectsPage() {
             <option value="">All statuses</option>
             {PROJECT_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
-          {(user?.role === 'Admin' || user?.role === 'Manager') && (
+          {true && (
             <Link to="/projects/new" className="btn-primary">
               <Plus className="h-3.5 w-3.5" /> New project
             </Link>
@@ -61,7 +61,7 @@ export function ProjectsPage() {
         ) : data?.data?.length === 0 ? (
           <div className="py-16 text-center">
             <p className="text-sm text-op-muted mb-3">No projects found.</p>
-            {(user?.role === 'Admin' || user?.role === 'Manager') && (
+            {true && (
               <Link to="/projects/new" className="btn-primary">
                 <Plus className="h-3.5 w-3.5" /> New project
               </Link>

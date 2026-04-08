@@ -5,11 +5,11 @@ import { timeByUser, timeByProject, timeByTask, taskStatusSummary, projectProgre
 const router = Router();
 router.use(authenticateToken);
 
-router.get('/time-by-user', authorizeRoles('Admin', 'Manager'), timeByUser);
-router.get('/time-by-project', authorizeRoles('Admin', 'Manager'), timeByProject);
-router.get('/time-by-task', authorizeRoles('Admin', 'Manager'), timeByTask);
-router.get('/task-status-summary', authorizeRoles('Admin', 'Manager'), taskStatusSummary);
-router.get('/project-progress', authorizeRoles('Admin', 'Manager'), projectProgress);
+router.get('/time-by-user', timeByUser);
+router.get('/time-by-project', timeByProject);
+router.get('/time-by-task', timeByTask);
+router.get('/task-status-summary', taskStatusSummary);
+router.get('/project-progress', projectProgress);
 router.get('/my-time-summary', myTimeSummary);
 
 export default router;

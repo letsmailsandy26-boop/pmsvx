@@ -35,14 +35,10 @@ export function AppRouter() {
             <Route path="/tasks/:id" element={<TaskDetailPage />} />
             <Route path="/timelogs" element={<TimeLogsPage />} />
             <Route path="/notifications" element={<NotificationsPage />} />
-            <Route element={<RoleRoute roles={['Admin', 'Manager']} />}>
-              <Route path="/reports" element={<ReportsPage />} />
-            </Route>
-            <Route element={<RoleRoute roles={['Admin']} />}>
-              <Route path="/users" element={<UsersPage />} />
-              <Route path="/users/new" element={<UserFormPage />} />
-              <Route path="/users/:id/edit" element={<UserFormPage />} />
-            </Route>
+            <Route path="/reports" element={<ReportsPage />} />
+            <Route path="/users" element={<UsersPage />} />
+            <Route path="/users/new" element={<UserFormPage />} />
+            <Route path="/users/:id/edit" element={<UserFormPage />} />
           </Route>
         </Route>
         <Route path="*" element={<Navigate to="/dashboard" replace />} />

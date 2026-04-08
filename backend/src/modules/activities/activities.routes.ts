@@ -4,6 +4,6 @@ import { listActivities } from './activities.controller';
 
 const router = Router();
 router.use(authenticateToken);
-router.get('/', authorizeRoles('Admin', 'Manager'), listActivities);
+router.get('/', listActivities);
 
 export default router;

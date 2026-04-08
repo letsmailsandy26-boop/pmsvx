@@ -6,7 +6,7 @@ const router = Router();
 router.use(authenticateToken);
 
 router.get('/user', userDashboard);
-router.get('/manager', authorizeRoles('Admin', 'Manager'), managerDashboard);
-router.get('/admin', authorizeRoles('Admin'), adminDashboard);
+router.get('/manager', managerDashboard);
+router.get('/admin', adminDashboard);
 
 export default router;

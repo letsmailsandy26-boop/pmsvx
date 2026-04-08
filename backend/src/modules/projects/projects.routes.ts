@@ -9,12 +9,12 @@ const router = Router();
 router.use(authenticateToken);
 
 router.get('/', listProjects);
-router.post('/', authorizeRoles('Admin', 'Manager'), createProject);
+router.post('/', createProject);
 router.get('/:id', getProject);
-router.patch('/:id', authorizeRoles('Admin', 'Manager'), updateProject);
-router.delete('/:id', authorizeRoles('Admin'), deleteProject);
-router.post('/:id/members', authorizeRoles('Admin', 'Manager'), addMember);
-router.delete('/:id/members/:userId', authorizeRoles('Admin', 'Manager'), removeMember);
+router.patch('/:id', updateProject);
+router.delete('/:id', deleteProject);
+router.post('/:id/members', addMember);
+router.delete('/:id/members/:userId', removeMember);
 router.get('/:id/activities', getProjectActivities);
 
 export default router;

@@ -21,10 +21,10 @@ const BORDER   = 'rgba(255,255,255,0.08)'  // subtle divider
 const mainNav = [
   { to: '/dashboard',     icon: LayoutDashboard, label: 'Overview',           roles: ['Admin','Manager','User'] },
   { to: '/my-tasks',      icon: CheckSquare,     label: 'My Work Packages',   roles: ['Admin','Manager','User'] },
-  { to: '/tasks',         icon: CheckSquare,     label: 'All Work Packages',  roles: ['Admin','Manager'] },
+  { to: '/tasks',         icon: CheckSquare,     label: 'All Work Packages',  roles: ['Admin','Manager','User'] },
   { to: '/timelogs',      icon: Clock,           label: 'Time Logs',          roles: ['Admin','Manager','User'] },
-  { to: '/reports',       icon: BarChart2,       label: 'Reports',            roles: ['Admin','Manager'] },
-  { to: '/users',         icon: Users,           label: 'Users',              roles: ['Admin'] },
+  { to: '/reports',       icon: BarChart2,       label: 'Reports',            roles: ['Admin','Manager','User'] },
+  { to: '/users',         icon: Users,           label: 'Users',              roles: ['Admin','Manager','User'] },
   { to: '/notifications', icon: Bell,            label: 'Notifications',      roles: ['Admin','Manager','User'] },
 ]
 

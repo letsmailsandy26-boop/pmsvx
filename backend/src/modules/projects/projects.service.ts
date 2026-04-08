@@ -18,9 +18,6 @@ export const projectsService = {
       { name: { contains: query.search, mode: 'insensitive' } },
       { description: { contains: query.search, mode: 'insensitive' } },
     ];
-    if (query.role === 'User' && query.allProjects !== 'true') {
-      where.members = { some: { userId: query.userId } };
-    }
     const [projects, total] = await Promise.all([
       prisma.project.findMany({ where, include: projectInclude, skip, take, orderBy: { createdAt: 'desc' } }),
       prisma.project.count({ where }),

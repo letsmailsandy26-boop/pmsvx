@@ -92,8 +92,8 @@ export function TaskDetailPage() {
   if (isLoading) return <div style={{ display:'flex', justifyContent:'center', padding:64 }}><Spinner /></div>
   if (!task)    return <div style={{ padding:24, color:'#555' }}>Work package not found.</div>
 
-  const isManagerOrAdmin = user?.role === 'Admin' || user?.role === 'Manager'
-  const canEdit = isManagerOrAdmin || task.assigneeId === user?.id
+  const isManagerOrAdmin = true
+  const canEdit = true
   const overdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'Closed'
 
   const tabs: { key: TabKey; icon: typeof MessageSquare; label: string; count?: number }[] = [
@@ -197,14 +197,12 @@ export function TaskDetailPage() {
                         </div>
                         <p style={S.commentBody}>{c.body}</p>
                       </div>
-                      {(c.authorId === user?.id || user?.role === 'Admin') && (
-                        <button onClick={() => setDeleteCommentId(c.id)}
-                          style={{ background:'none', border:'none', cursor:'pointer', color:'#BBBBBB', padding:'0 2px', lineHeight:1 }}
-                          onMouseOver={e => (e.currentTarget.style.color = '#dc2626')}
-                          onMouseOut={e => (e.currentTarget.style.color = '#BBBBBB')}>
-                          <X size={13} />
-                        </button>
-                      )}
+                      <button onClick={() => setDeleteCommentId(c.id)}
+                        style={{ background:'none', border:'none', cursor:'pointer', color:'#BBBBBB', padding:'0 2px', lineHeight:1 }}
+                        onMouseOver={e => (e.currentTarget.style.color = '#dc2626')}
+                        onMouseOut={e => (e.currentTarget.style.color = '#BBBBBB')}>
+                        <X size={13} />
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -276,14 +274,12 @@ export function TaskDetailPage() {
                         <td style={{ padding:'8px 14px', color:'#888' }}>{formatDate(log.logDate)}</td>
                         <td style={{ padding:'8px 14px', color:'#888', maxWidth:180, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{log.description || '—'}</td>
                         <td style={{ padding:'8px 14px' }}>
-                          {(log.userId === user?.id || user?.role === 'Admin') && (
-                            <button onClick={() => setDeleteLogId(log.id)}
-                              style={{ background:'none', border:'none', cursor:'pointer', color:'#BBBBBB' }}
-                              onMouseOver={e => (e.currentTarget.style.color='#dc2626')}
-                              onMouseOut={e => (e.currentTarget.style.color='#BBBBBB')}>
-                              <X size={13} />
-                            </button>
-                          )}
+                          <button onClick={() => setDeleteLogId(log.id)}
+                            style={{ background:'none', border:'none', cursor:'pointer', color:'#BBBBBB' }}
+                            onMouseOver={e => (e.currentTarget.style.color='#dc2626')}
+                            onMouseOut={e => (e.currentTarget.style.color='#BBBBBB')}>
+                            <X size={13} />
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -329,14 +325,12 @@ export function TaskDetailPage() {
                       style={{ padding:'4px 8px', fontSize:12, color:'#888', background:'none', border:'1px solid #E0E0E0', borderRadius:3, cursor:'pointer', display:'flex', alignItems:'center', gap:4 }}>
                       <Download size={13} />
                     </button>
-                    {(a.uploaderId === user?.id || user?.role === 'Admin') && (
-                      <button onClick={() => setDeleteAttachId(a.id)}
-                        style={{ background:'none', border:'none', cursor:'pointer', color:'#BBBBBB', padding:'4px' }}
-                        onMouseOver={e => (e.currentTarget.style.color='#dc2626')}
-                        onMouseOut={e => (e.currentTarget.style.color='#BBBBBB')}>
-                        <X size={13} />
-                      </button>
-                    )}
+                    <button onClick={() => setDeleteAttachId(a.id)}
+                      style={{ background:'none', border:'none', cursor:'pointer', color:'#BBBBBB', padding:'4px' }}
+                      onMouseOver={e => (e.currentTarget.style.color='#dc2626')}
+                      onMouseOut={e => (e.currentTarget.style.color='#BBBBBB')}>
+                      <X size={13} />
+                    </button>
                   </div>
                 ))}
               </div>

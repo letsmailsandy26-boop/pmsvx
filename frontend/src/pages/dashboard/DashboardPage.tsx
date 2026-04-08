@@ -22,7 +22,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 export function DashboardPage() {
   const { user } = useAuth()
-  const isManagerOrAdmin = user?.role === 'Admin' || user?.role === 'Manager'
+  const isManagerOrAdmin = true
 
   const { data: userData, isLoading } = useQuery({
     queryKey: ['dashboard', 'user'],
@@ -31,12 +31,10 @@ export function DashboardPage() {
   const { data: managerData } = useQuery({
     queryKey: ['dashboard', 'manager'],
     queryFn: dashboardApi.manager,
-    enabled: isManagerOrAdmin,
   })
   const { data: adminData } = useQuery({
     queryKey: ['dashboard', 'admin'],
     queryFn: dashboardApi.admin,
-    enabled: user?.role === 'Admin',
   })
 
   if (isLoading) return (
@@ -79,7 +77,7 @@ export function DashboardPage() {
             {(userData?.weeklyHours ?? 0).toFixed(1)}
           </p>
         </div>
-        {user?.role === 'Admin' && adminData ? (
+        {true && adminData ? (
           <div className="op-panel p-4">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-op-muted mb-1">
               Total projects
@@ -230,7 +228,7 @@ export function DashboardPage() {
       )}
 
       {/* Recent Activity (Admin) */}
-      {user?.role === 'Admin' && adminData?.recentActivity && (
+      {true && adminData?.recentActivity && (
         <div className="op-panel overflow-hidden">
           <div className="op-panel-header">
             <span className="op-panel-title">Recent activity</span>

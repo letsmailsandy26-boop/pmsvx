@@ -34,7 +34,7 @@ export const deleteUser = asyncHandler(async (req: AuthRequest, res: Response) =
 
 export const uploadAvatar = asyncHandler(async (req: AuthRequest, res: Response) => {
   const userId = parseInt(req.params.id);
-  if (req.user!.role !== 'Admin' && req.user!.id !== userId) { sendError(res, 'Forbidden', 403); return; }
+  if (req.user!.id !== userId) { sendError(res, 'Forbidden', 403); return; }
   if (!req.file) { sendError(res, 'No file uploaded', 400); return; }
   const avatarUrl = `/uploads/avatars/${req.file.filename}`;
   const user = await usersService.updateAvatar(userId, avatarUrl);

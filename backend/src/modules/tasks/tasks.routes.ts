@@ -12,10 +12,10 @@ router.get('/', listTasks);
 router.post('/', createTask);
 router.get('/:id', getTask);
 router.patch('/:id', updateTask);
-router.delete('/:id', authorizeRoles('Admin', 'Manager'), deleteTask);
+router.delete('/:id', deleteTask);
 router.patch('/:id/status', changeStatus);
 router.patch('/:id/progress', updateProgress);
-router.patch('/:id/assign', authorizeRoles('Admin', 'Manager'), reassignTask);
+router.patch('/:id/assign', reassignTask);
 router.get('/:id/activities', getTaskActivities);
 
 export default router;

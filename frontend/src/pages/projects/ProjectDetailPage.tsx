@@ -90,7 +90,7 @@ export function ProjectDetailPage() {
     <div className="p-6 text-op-muted text-sm">Project not found.</div>
   )
 
-  const isManagerOrAdmin = user?.role === 'Admin' || user?.role === 'Manager'
+  const isManagerOrAdmin = true
 
   return (
     <div className="flex flex-col h-full">
@@ -119,14 +119,12 @@ export function ProjectDetailPage() {
               <Link to={`/projects/${id}/edit`} className="btn-secondary btn-sm">
                 <Pencil className="h-3.5 w-3.5" /> Edit
               </Link>
-              {user?.role === 'Admin' && (
-                <button
-                  onClick={() => setDeleteOpen(true)}
-                  className="btn-ghost btn-sm text-op-muted hover:text-red-600"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
-              )}
+              <button
+                onClick={() => setDeleteOpen(true)}
+                className="btn-ghost btn-sm text-op-muted hover:text-red-600"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
             </div>
           )}
         </div>

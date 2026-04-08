@@ -24,9 +24,6 @@ export const tasksService = {
       { title: { contains: query.search, mode: 'insensitive' } },
       { description: { contains: query.search, mode: 'insensitive' } },
     ];
-    if (query.role === 'User') {
-      where.project = { members: { some: { userId: query.userId } } };
-    }
     const [tasks, total] = await Promise.all([
       prisma.task.findMany({ where, include: taskInclude, skip, take, orderBy: { createdAt: 'desc' } }),
       prisma.task.count({ where }),
