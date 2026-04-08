@@ -23,6 +23,8 @@ export function ProjectDetailPage() {
   const qc = useQueryClient()
   const [tab, setTab] = useState('Overview')
   const [deleteOpen, setDeleteOpen] = useState(false)
+  const [removeMemberId, setRemoveMemberId] = useState<number | null>(null)
+  const [deleteAttachId, setDeleteAttachId] = useState<number | null>(null)
   const [addMemberId, setAddMemberId] = useState('')
 
   const projectId = parseInt(id!)
@@ -70,7 +72,10 @@ export function ProjectDetailPage() {
 
   const removeMemberMutation = useMutation({
     mutationFn: (userId: number) => projectsApi.removeMember(projectId, userId),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['projects', projectId] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['projects', projectId] })
+      setRemoveMemberId(null)
+    },
   })
 
   const uploadMutation = useMutation({
@@ -80,7 +85,10 @@ export function ProjectDetailPage() {
 
   const deleteAttachmentMutation = useMutation({
     mutationFn: (attachmentId: number) => projectsApi.deleteAttachment(attachmentId),
-    onSuccess: () => refetchAttachments(),
+    onSuccess: () => {
+      refetchAttachments()
+      setDeleteAttachId(null)
+    },
   })
 
   if (isLoading) return (
@@ -365,7 +373,7 @@ export function ProjectDetailPage() {
                     {canManageProject && (
                       <td>
                         <button
-                          onClick={() => removeMemberMutation.mutate(m.userId)}
+                          onClick={() => setRemoveMemberId(m.userId)}
                           className="text-op-muted/40 hover:text-red-500 transition-colors"
                         >
                           <X className="h-3.5 w-3.5" />
@@ -432,7 +440,7 @@ export function ProjectDetailPage() {
                     {canManageProject && (
                       <button
                         className="btn-ghost btn-sm text-op-muted hover:text-red-500"
-                        onClick={() => deleteAttachmentMutation.mutate(a.id)}
+                        onClick={() => setDeleteAttachId(a.id)}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
@@ -484,6 +492,20 @@ export function ProjectDetailPage() {
         onConfirm={() => deleteMutation.mutate()}
         isLoading={deleteMutation.isPending}
         message="Delete this project and all its tasks permanently? This cannot be undone."
+      />
+      <ConfirmDialog
+        isOpen={removeMemberId !== null}
+        onClose={() => setRemoveMemberId(null)}
+        onConfirm={() => removeMemberId !== null && removeMemberMutation.mutate(removeMemberId)}
+        isLoading={removeMemberMutation.isPending}
+        message="Remove this member from the project?"
+      />
+      <ConfirmDialog
+        isOpen={deleteAttachId !== null}
+        onClose={() => setDeleteAttachId(null)}
+        onConfirm={() => deleteAttachId !== null && deleteAttachmentMutation.mutate(deleteAttachId)}
+        isLoading={deleteAttachmentMutation.isPending}
+        message="Delete this file permanently?"
       />
     </div>
   )

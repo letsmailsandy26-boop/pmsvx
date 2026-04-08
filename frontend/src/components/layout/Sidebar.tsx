@@ -9,6 +9,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { projectsApi } from '../../api/projects.api'
 import { Project } from '../../types'
+import { ConfirmDialog } from '../ui/ConfirmDialog'
 
 // Blue sidebar palette — hardcoded so Tailwind config cache doesn't matter
 const BG       = '#1B3C6E'   // dark navy blue
@@ -31,6 +32,7 @@ const mainNav = [
 export function Sidebar() {
   const { user, logout } = useAuth()
   const [projectsOpen, setProjectsOpen] = useState(true)
+  const [logoutOpen, setLogoutOpen] = useState(false)
   const filtered = mainNav.filter(item => user && item.roles.includes(user.role))
 
   const { data: projectsData } = useQuery({
@@ -171,7 +173,7 @@ export function Sidebar() {
           )}
         </NavLink>
         <button
-          onClick={logout}
+          onClick={() => setLogoutOpen(true)}
           style={{
             width: '100%', display: 'flex', alignItems: 'center', gap: 8,
             padding: '6px 10px', marginTop: 2, borderRadius: 4,
@@ -185,6 +187,13 @@ export function Sidebar() {
           Sign out
         </button>
       </div>
+
+      <ConfirmDialog
+        isOpen={logoutOpen}
+        onClose={() => setLogoutOpen(false)}
+        onConfirm={logout}
+        message="Are you sure you want to sign out?"
+      />
     </aside>
   )
 }

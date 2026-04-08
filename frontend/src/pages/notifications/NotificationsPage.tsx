@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { notificationsApi } from '../../api/notifications.api'
 import { Spinner } from '../../components/ui/Spinner'
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { formatRelative } from '../../utils/formatDate'
 import { Bell, Check, CheckCheck, Trash2 } from 'lucide-react'
 import { Notification } from '../../types'
@@ -8,6 +10,7 @@ import { cn } from '../../utils/cn'
 
 export function NotificationsPage() {
   const qc = useQueryClient()
+  const [deleteId, setDeleteId] = useState<number | null>(null)
 
   const { data, isLoading } = useQuery({
     queryKey: ['notifications'],
@@ -26,7 +29,10 @@ export function NotificationsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => notificationsApi.delete(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['notifications'] })
+      setDeleteId(null)
+    },
   })
 
   const unreadCount = data?.data?.filter((n: Notification) => !n.isRead).length ?? 0
@@ -95,7 +101,7 @@ export function NotificationsPage() {
                     </button>
                   )}
                   <button
-                    onClick={() => deleteMutation.mutate(n.id)}
+                    onClick={() => setDeleteId(n.id)}
                     className="btn-ghost btn-sm text-op-muted hover:text-red-600"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
@@ -106,6 +112,13 @@ export function NotificationsPage() {
           </div>
         )}
       </div>
+      <ConfirmDialog
+        isOpen={deleteId !== null}
+        onClose={() => setDeleteId(null)}
+        onConfirm={() => deleteId !== null && deleteMutation.mutate(deleteId)}
+        isLoading={deleteMutation.isPending}
+        message="Delete this notification?"
+      />
     </div>
   )
 }
