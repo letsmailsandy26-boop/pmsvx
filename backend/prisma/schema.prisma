@@ -126,6 +126,8 @@ model Project {
   tasks       Task[]
   attachments Attachment[]
 
+  @@index([status])
+  @@index([managerId])
   @@map("projects")
 }
 
@@ -171,6 +173,12 @@ model Task {
   attachments Attachment[]
   notifications Notification[]
 
+  @@index([projectId])
+  @@index([assigneeId])
+  @@index([reporterId])
+  @@index([reviewerId])
+  @@index([status])
+  @@index([dueDate])
   @@map("tasks")
 }
 
@@ -188,6 +196,9 @@ model TimeLog {
   task        Task        @relation(fields: [taskId], references: [id], onDelete: Cascade)
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([taskId])
+  @@index([userId])
+  @@index([logDate])
   @@map("time_logs")
 }
 
@@ -203,6 +214,8 @@ model Comment {
   task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
   author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
+  @@index([taskId])
+  @@index([authorId])
   @@map("comments")
 }
 
@@ -239,6 +252,8 @@ model Activity {
 
   actor    User     @relation(fields: [actorId], references: [id], onDelete: Cascade)
 
+  @@index([entityType, entityId])
+  @@index([actorId])
   @@map("activities")
 }
 
@@ -257,5 +272,7 @@ model Notification {
   trigger   User? @relation("NotificationTrigger", fields: [triggeredBy], references: [id])
   task      Task? @relation(fields: [taskId], references: [id], onDelete: Cascade)
 
+  @@index([recipientId, isRead])
+  @@index([taskId])
   @@map("notifications")
 }

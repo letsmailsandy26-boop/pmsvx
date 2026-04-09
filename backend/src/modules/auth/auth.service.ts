@@ -5,10 +5,11 @@ import prisma from '../../config/database';
 export const authService = {
   async login(email: string, password: string) {
     const user = await prisma.user.findUnique({ where: { email } });
-    if (!user || !user.isActive) throw Object.assign(new Error('Invalid credentials'), { statusCode: 401 });
+    if (!user) throw Object.assign(new Error('Invalid email or password'), { statusCode: 401 });
+    if (!user.isActive) throw Object.assign(new Error('Your account has been disabled. Please contact an administrator.'), { statusCode: 401 });
 
     const valid = await bcrypt.compare(password, user.passwordHash);
-    if (!valid) throw Object.assign(new Error('Invalid credentials'), { statusCode: 401 });
+    if (!valid) throw Object.assign(new Error('Invalid email or password'), { statusCode: 401 });
 
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role, name: user.name },

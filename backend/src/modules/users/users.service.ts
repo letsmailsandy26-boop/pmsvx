@@ -73,9 +73,13 @@ export const usersService = {
 
   async getMyTasks(userId: number) {
     return prisma.task.findMany({
-      where: { assigneeId: userId, status: { not: 'Closed' } },
+      where: {
+        OR: [{ assigneeId: userId }, { reporterId: userId }],
+        status: { not: 'Closed' },
+      },
       include: {
         project: { select: { id: true, name: true } },
+        assignee: { select: { id: true, name: true, avatarUrl: true } },
         reporter: { select: { id: true, name: true } },
       },
       orderBy: { dueDate: 'asc' },
