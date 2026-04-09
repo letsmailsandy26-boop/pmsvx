@@ -15,6 +15,7 @@ import reportsRoutes from './modules/reports/reports.routes';
 import dashboardRoutes from './modules/dashboard/dashboard.routes';
 import activitiesRoutes from './modules/activities/activities.routes';
 import { listAllTimeLogs } from './modules/timelogs/timelogs.controller';
+import { authenticateToken } from './middleware/auth';
 import { errorHandler } from './middleware/errorHandler';
 
 const app = express();
@@ -45,7 +46,7 @@ app.use('/api/notifications', notificationsRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/activities', activitiesRoutes);
-app.use('/api/timelogs', (req, res, next) => {
+app.use('/api/timelogs', authenticateToken, (req, res, next) => {
   if (req.method === 'GET') return listAllTimeLogs(req as any, res, next);
   next();
 });
