@@ -80,13 +80,14 @@ export const tasksService = {
 
   async update(id: number, data: Record<string, unknown>, actorId: number) {
     const allowed: Record<string, unknown> = {};
-    const scalarFields = ['title', 'description', 'type', 'status', 'priority', 'assigneeId', 'reviewerId', 'estimatedHours', 'progressPercent', 'startDate', 'dueDate'];
+    const scalarFields = ['title', 'description', 'type', 'status', 'priority', 'assigneeId', 'reporterId', 'reviewerId', 'estimatedHours', 'progressPercent', 'startDate', 'dueDate'];
     for (const field of scalarFields) {
       if (data[field] !== undefined) allowed[field] = data[field];
     }
     if (allowed.startDate) allowed.startDate = new Date(allowed.startDate as string);
     if (allowed.dueDate) allowed.dueDate = new Date(allowed.dueDate as string);
     if ('assigneeId' in allowed) allowed.assigneeId = allowed.assigneeId ? Number(allowed.assigneeId) : null;
+    if ('reporterId' in allowed) allowed.reporterId = allowed.reporterId ? Number(allowed.reporterId) : undefined;
     if ('reviewerId' in allowed) allowed.reviewerId = allowed.reviewerId ? Number(allowed.reviewerId) : null;
     if ('estimatedHours' in allowed) allowed.estimatedHours = allowed.estimatedHours !== '' && allowed.estimatedHours != null ? Number(allowed.estimatedHours) : null;
     const task = await prisma.task.update({ where: { id }, data: allowed, include: taskInclude });

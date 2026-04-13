@@ -39,6 +39,7 @@ export function TaskFormModal({ taskId, onClose }: TaskFormModalProps) {
     status: 'New',
     priority: 'Medium',
     assigneeId: '',
+    reporterId: '',
     reviewerId: '',
     estimatedHours: '',
     startDate: '',
@@ -56,6 +57,7 @@ export function TaskFormModal({ taskId, onClose }: TaskFormModalProps) {
         status: task.status,
         priority: task.priority,
         assigneeId: task.assigneeId ? String(task.assigneeId) : '',
+        reporterId: task.reporterId ? String(task.reporterId) : '',
         reviewerId: task.reviewerId ? String(task.reviewerId) : '',
         estimatedHours: task.estimatedHours ? String(task.estimatedHours) : '',
         startDate: task.startDate ? task.startDate.split('T')[0] : '',
@@ -70,6 +72,7 @@ export function TaskFormModal({ taskId, onClose }: TaskFormModalProps) {
         ...data,
         projectId: parseInt(data.projectId),
         assigneeId: data.assigneeId ? parseInt(data.assigneeId) : undefined,
+        reporterId: data.reporterId ? parseInt(data.reporterId) : undefined,
         reviewerId: data.reviewerId ? parseInt(data.reviewerId) : undefined,
         estimatedHours: data.estimatedHours ? parseFloat(data.estimatedHours) : undefined,
       }
@@ -175,6 +178,21 @@ export function TaskFormModal({ taskId, onClose }: TaskFormModalProps) {
               onChange={(e) => setForm((f) => ({ ...f, assigneeId: e.target.value }))}
             >
               <option value="">Unassigned</option>
+              {usersData?.data?.map((u: User) => (
+                <option key={u.id} value={u.id}>
+                  {u.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="label">Reporter</label>
+            <select
+              className="input"
+              value={form.reporterId}
+              onChange={(e) => setForm((f) => ({ ...f, reporterId: e.target.value }))}
+            >
+              <option value="">Select reporter</option>
               {usersData?.data?.map((u: User) => (
                 <option key={u.id} value={u.id}>
                   {u.name}
