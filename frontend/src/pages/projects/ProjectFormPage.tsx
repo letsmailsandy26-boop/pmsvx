@@ -36,6 +36,13 @@ export function ProjectFormPage() {
   })
   const [error, setError] = useState('')
 
+  const validateDates = (startDate: string, endDate: string) => {
+    if (startDate && endDate && endDate < startDate) {
+      return 'End date cannot be before start date'
+    }
+    return ''
+  }
+
   useEffect(() => {
     if (project) {
       setForm({
@@ -80,6 +87,8 @@ export function ProjectFormPage() {
         <form
           onSubmit={(e: FormEvent) => {
             e.preventDefault()
+            const dateError = validateDates(form.startDate, form.endDate)
+            if (dateError) { setError(dateError); return }
             setError('')
             mutation.mutate(form)
           }}
@@ -125,7 +134,12 @@ export function ProjectFormPage() {
                 className="input"
                 type="date"
                 value={form.startDate}
-                onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))}
+                max={form.endDate || undefined}
+                onChange={(e) => {
+                  const val = e.target.value
+                  setForm((f) => ({ ...f, startDate: val }))
+                  setError(validateDates(val, form.endDate))
+                }}
               />
             </div>
             <div>
@@ -134,7 +148,12 @@ export function ProjectFormPage() {
                 className="input"
                 type="date"
                 value={form.endDate}
-                onChange={(e) => setForm((f) => ({ ...f, endDate: e.target.value }))}
+                min={form.startDate || undefined}
+                onChange={(e) => {
+                  const val = e.target.value
+                  setForm((f) => ({ ...f, endDate: val }))
+                  setError(validateDates(form.startDate, val))
+                }}
               />
             </div>
             <div>

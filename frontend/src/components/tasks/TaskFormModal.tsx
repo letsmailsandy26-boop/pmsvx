@@ -88,6 +88,10 @@ export function TaskFormModal({ taskId, onClose }: TaskFormModalProps) {
       setError('Project and title are required')
       return
     }
+    if (form.startDate && form.dueDate && form.dueDate < form.startDate) {
+      setError('Due date cannot be before start date')
+      return
+    }
     setError('')
     mutation.mutate(form)
   }
@@ -210,7 +214,13 @@ export function TaskFormModal({ taskId, onClose }: TaskFormModalProps) {
               className="input"
               type="date"
               value={form.startDate}
-              onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))}
+              max={form.dueDate || undefined}
+              onChange={(e) => {
+                const val = e.target.value
+                setForm((f) => ({ ...f, startDate: val }))
+                if (form.dueDate && val && form.dueDate < val) setError('Due date cannot be before start date')
+                else setError('')
+              }}
             />
           </div>
           <div>
@@ -219,7 +229,13 @@ export function TaskFormModal({ taskId, onClose }: TaskFormModalProps) {
               className="input"
               type="date"
               value={form.dueDate}
-              onChange={(e) => setForm((f) => ({ ...f, dueDate: e.target.value }))}
+              min={form.startDate || undefined}
+              onChange={(e) => {
+                const val = e.target.value
+                setForm((f) => ({ ...f, dueDate: val }))
+                if (form.startDate && val && val < form.startDate) setError('Due date cannot be before start date')
+                else setError('')
+              }}
             />
           </div>
           <div className="col-span-2">
