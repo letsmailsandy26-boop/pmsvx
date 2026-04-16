@@ -245,42 +245,68 @@ export function TimeLogsPage() {
 
       ) : (
 
-        /* ── DETAIL LIST ── */
-        <div className="op-panel overflow-hidden">
-          {(detailData?.data ?? []).length === 0 ? (
-            <div className="py-16 text-center text-sm text-op-muted">No time logs for this period.</div>
-          ) : (
-            <table className="op-table">
-              <thead>
-                <tr><th>Member</th><th>Task</th><th>Project</th><th>Hours</th><th>Category</th><th>Date</th><th>Description</th></tr>
-              </thead>
-              <tbody>
-                {(detailData?.data ?? []).map((log: TimeLog) => (
-                  <tr key={log.id}>
-                    <td>
+        /* ── DETAIL LIST grouped by user ── */
+        (() => {
+          const logs: TimeLog[] = detailData?.data ?? []
+          if (logs.length === 0) return (
+            <div className="op-panel py-16 text-center text-sm text-op-muted">No time logs for this period.</div>
+          )
+          // group by userId
+          const groups = new Map<number, { user: TimeLog['user'] & { department?: string }; logs: TimeLog[] }>()
+          logs.forEach((log) => {
+            const uid = log.user?.id ?? 0
+            if (!groups.has(uid)) groups.set(uid, { user: log.user as any, logs: [] })
+            groups.get(uid)!.logs.push(log)
+          })
+          return (
+            <div className="space-y-3">
+              {Array.from(groups.values()).map((group) => {
+                const groupTotal = group.logs.reduce((s, l) => s + l.hours, 0)
+                return (
+                  <div key={group.user?.id} className="op-panel overflow-hidden">
+                    {/* User header */}
+                    <div className="flex items-center justify-between px-4 py-2.5 bg-op-bg border-b border-op-border">
                       <div className="flex items-center gap-2">
-                        <Avatar name={log.user?.name} size="sm" />
+                        <Avatar name={group.user?.name} src={(group.user as any)?.avatarUrl} size="sm" />
                         <div>
-                          <p className="text-xs font-medium text-op-text">{log.user?.name}</p>
-                          <p className="text-[10px] text-op-muted">{(log.user as any)?.department}</p>
+                          <p className="text-xs font-semibold text-op-text">{group.user?.name}</p>
+                          <p className="text-[10px] text-op-muted">{(group.user as any)?.department || '—'}</p>
                         </div>
                       </div>
-                    </td>
-                    <td><Link to={`/tasks/${log.task?.id}`} className="text-op-primary hover:underline font-medium text-xs">{log.task?.title || '—'}</Link></td>
-                    <td className="text-op-muted text-xs">{(log.task as any)?.project?.name || '—'}</td>
-                    <td><span className="font-bold tabular-nums text-op-primary">{log.hours}h</span></td>
-                    <td><Badge value={log.category} /></td>
-                    <td className="text-op-muted text-xs whitespace-nowrap">{formatDate(log.logDate)}</td>
-                    <td className="text-op-muted text-xs" style={{ minWidth: 160, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{log.description || '—'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-          <div className="px-4 py-3 border-t border-op-border">
-            <Pagination page={page} totalPages={detailData?.pagination?.totalPages || 1} onPage={setPage} />
-          </div>
-        </div>
+                      <span className="text-xs font-bold text-op-primary tabular-nums">{groupTotal}h total</span>
+                    </div>
+                    {/* Log entries */}
+                    <div className="divide-y divide-op-border-light">
+                      {group.logs.map((log) => (
+                        <div key={log.id} className="px-4 py-3">
+                          {/* Top line: task, project, hours, category, date */}
+                          <div className="flex items-center gap-3 flex-wrap mb-1">
+                            <Link to={`/tasks/${log.task?.id}`} className="text-op-primary hover:underline font-medium text-xs">
+                              {log.task?.title || '—'}
+                            </Link>
+                            <span className="text-[10px] text-op-muted">·</span>
+                            <span className="text-[10px] text-op-muted">{(log.task as any)?.project?.name || '—'}</span>
+                            <span className="text-[10px] text-op-muted">·</span>
+                            <span className="font-bold tabular-nums text-op-primary text-xs">{log.hours}h</span>
+                            <Badge value={log.category} />
+                            <span className="text-[10px] text-op-muted ml-auto whitespace-nowrap">{formatDate(log.logDate)}</span>
+                          </div>
+                          {/* Description on its own line */}
+                          {log.description && (
+                            <p className="text-xs text-op-muted leading-relaxed mt-1 pl-0">{log.description}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })}
+              <div className="op-panel px-4 py-3">
+                <Pagination page={page} totalPages={detailData?.pagination?.totalPages || 1} onPage={setPage} />
+              </div>
+            </div>
+          )
+        })()
       )}
     </div>
   )
