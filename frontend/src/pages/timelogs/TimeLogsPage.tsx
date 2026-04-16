@@ -40,7 +40,7 @@ export function TimeLogsPage() {
   const [customTo, setCustomTo] = useState('')
   const [filterUserId, setFilterUserId] = useState('')
   const [filterProjectId, setFilterProjectId] = useState('')
-  const [viewMode, setViewMode] = useState<ViewMode>('summary')
+  const [viewMode, setViewMode] = useState<ViewMode>('detail')
   const [page, setPage] = useState(1)
   const [myPage, setMyPage] = useState(1)
 
@@ -146,8 +146,8 @@ export function TimeLogsPage() {
         </div>
         <div className="flex items-center gap-2">
           <div className="flex rounded border border-op-border overflow-hidden text-xs">
-            <button onClick={() => setViewMode('summary')} className={`px-3 py-1.5 font-medium transition-colors ${viewMode === 'summary' ? 'bg-op-primary text-white' : 'bg-white text-op-muted hover:bg-op-hover'}`}>Summary</button>
-            <button onClick={() => setViewMode('detail')} className={`px-3 py-1.5 font-medium transition-colors ${viewMode === 'detail' ? 'bg-op-primary text-white' : 'bg-white text-op-muted hover:bg-op-hover'}`}>Detail</button>
+            <button onClick={() => setViewMode('detail')} className={`px-3 py-1.5 font-medium transition-colors ${viewMode === 'detail' ? 'bg-op-primary text-white' : 'bg-white text-op-muted hover:bg-op-hover'}`}>By Member</button>
+            <button onClick={() => setViewMode('summary')} className={`px-3 py-1.5 font-medium transition-colors ${viewMode === 'summary' ? 'bg-op-primary text-white' : 'bg-white text-op-muted hover:bg-op-hover'}`}>Category Totals</button>
           </div>
           {viewMode === 'summary' && (
             <div className="op-panel px-3 py-1.5 text-xs text-op-muted">
