@@ -12,13 +12,19 @@ export const timelogsService = {
     });
   },
 
-  async listAll(query: { page?: string; limit?: string; userId?: number; role?: string; projectId?: string; category?: string; filterUserId?: string }) {
+  async listAll(query: { page?: string; limit?: string; userId?: number; role?: string; projectId?: string; category?: string; filterUserId?: string; dateFrom?: string; dateTo?: string }) {
     const { page, limit, skip, take } = getPagination(query.page, query.limit);
     const where: Record<string, unknown> = {};
     if (query.role === 'User') where.userId = query.userId;
     if (query.filterUserId) where.userId = parseInt(query.filterUserId);
     if (query.category) where.category = query.category as LogCategory;
     if (query.projectId) where.task = { projectId: parseInt(query.projectId) };
+    if (query.dateFrom || query.dateTo) {
+      where.logDate = {
+        ...(query.dateFrom ? { gte: new Date(query.dateFrom) } : {}),
+        ...(query.dateTo ? { lte: new Date(query.dateTo + 'T23:59:59') } : {}),
+      };
+    }
     const [logs, total] = await Promise.all([
       prisma.timeLog.findMany({
         where,
