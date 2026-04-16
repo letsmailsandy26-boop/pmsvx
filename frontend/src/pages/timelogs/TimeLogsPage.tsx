@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { usersApi } from '../../api/users.api'
@@ -19,11 +19,7 @@ function getPeriodDates(period: Period, customFrom: string, customTo: string) {
   const now = new Date()
   const pad = (n: number) => String(n).padStart(2, '0')
   const fmt = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
-
-  if (period === 'today') {
-    const t = fmt(now)
-    return { dateFrom: t, dateTo: t }
-  }
+  if (period === 'today') { const t = fmt(now); return { dateFrom: t, dateTo: t } }
   if (period === 'week') {
     const day = now.getDay()
     const mon = new Date(now); mon.setDate(now.getDate() - (day === 0 ? 6 : day - 1))
@@ -39,35 +35,39 @@ export function TimeLogsPage() {
   const { user } = useAuth()
   const isManagerOrAdmin = user?.role === 'Admin' || user?.role === 'Manager'
 
-  // filters
   const [period, setPeriod] = useState<Period>('today')
   const [customFrom, setCustomFrom] = useState('')
   const [customTo, setCustomTo] = useState('')
   const [filterUserId, setFilterUserId] = useState('')
   const [filterProjectId, setFilterProjectId] = useState('')
   const [viewMode, setViewMode] = useState<ViewMode>('summary')
-
-  // detail view pagination
   const [page, setPage] = useState(1)
+  const [myPage, setMyPage] = useState(1)
 
   const { dateFrom, dateTo } = getPeriodDates(period, customFrom, customTo)
 
-  const queryParams = {
-    limit: 500,
+  const filterParams = {
     ...(filterUserId ? { filterUserId } : {}),
     ...(filterProjectId ? { projectId: filterProjectId } : {}),
     ...(dateFrom ? { dateFrom } : {}),
     ...(dateTo ? { dateTo } : {}),
   }
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['timelogs-all', filterUserId, filterProjectId, dateFrom, dateTo],
-    queryFn: () => isManagerOrAdmin ? usersApi.allTimeLogs(queryParams) : usersApi.myTimeLogs({ limit: 500 }),
-    enabled: isManagerOrAdmin,
+  // Summary: dedicated endpoint that groups in DB — no pagination limit issues
+  const { data: summaryData, isLoading: summaryLoading } = useQuery({
+    queryKey: ['timelogs-summary', filterUserId, filterProjectId, dateFrom, dateTo],
+    queryFn: () => usersApi.timelogSummary(filterParams),
+    enabled: isManagerOrAdmin && viewMode === 'summary',
   })
 
-  // my timelogs for regular users
-  const [myPage, setMyPage] = useState(1)
+  // Detail: paginated list
+  const { data: detailData, isLoading: detailLoading } = useQuery({
+    queryKey: ['timelogs-detail', filterUserId, filterProjectId, dateFrom, dateTo, page],
+    queryFn: () => usersApi.allTimeLogs({ ...filterParams, page, limit: 25 }),
+    enabled: isManagerOrAdmin && viewMode === 'detail',
+  })
+
+  // Regular user — own logs
   const { data: myData, isLoading: myLoading } = useQuery({
     queryKey: ['my-timelogs', myPage],
     queryFn: () => usersApi.myTimeLogs({ page: myPage, limit: 25 }),
@@ -79,49 +79,17 @@ export function TimeLogsPage() {
     queryFn: () => usersApi.list({ limit: 100, isActive: 'true' }),
     enabled: isManagerOrAdmin,
   })
-
   const { data: projectsData } = useQuery({
     queryKey: ['projects', 'all'],
     queryFn: () => projectsApi.list({ limit: 100 }),
     enabled: isManagerOrAdmin,
   })
 
-  const logs: TimeLog[] = data?.data ?? []
+  type SummaryRow = { id: number; name: string; department: string; avatarUrl: string | null; cats: Record<string, number>; total: number }
+  const pivot: SummaryRow[] = summaryData?.data ?? []
+  const grandTotal = pivot.reduce((s: number, r: SummaryRow) => s + r.total, 0)
 
-  // Build pivot: { userId -> { name, department, avatarUrl, cats: { Development: X, Testing: Y, ... }, total } }
-  const pivot = useMemo(() => {
-    const map = new Map<number, {
-      id: number; name: string; department: string; avatarUrl?: string;
-      cats: Record<string, number>; total: number
-    }>()
-    logs.forEach((log) => {
-      if (!log.user) return
-      const uid = log.user.id
-      if (!map.has(uid)) {
-        map.set(uid, {
-          id: uid,
-          name: log.user.name,
-          department: (log.user as any).department || '—',
-          avatarUrl: (log.user as any).avatarUrl,
-          cats: Object.fromEntries(LOG_CATEGORIES.map((c) => [c, 0])),
-          total: 0,
-        })
-      }
-      const row = map.get(uid)!
-      row.cats[log.category] = (row.cats[log.category] || 0) + log.hours
-      row.total += log.hours
-    })
-    return Array.from(map.values()).sort((a, b) => b.total - a.total)
-  }, [logs])
-
-  const grandTotal = pivot.reduce((s, r) => s + r.total, 0)
-
-  // paginate detail view in browser
-  const PAGE_SIZE = 25
-  const detailLogs = logs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
-  const detailTotalPages = Math.max(1, Math.ceil(logs.length / PAGE_SIZE))
-
-  // --- Regular user view ---
+  // ── Regular user view ──────────────────────────────────────────────
   if (!isManagerOrAdmin) {
     const myLogs: TimeLog[] = myData?.data ?? []
     const myTotal = myLogs.reduce((s, l) => s + l.hours, 0)
@@ -164,7 +132,9 @@ export function TimeLogsPage() {
     )
   }
 
-  // --- Admin / Manager view ---
+  // ── Admin / Manager view ───────────────────────────────────────────
+  const isLoading = viewMode === 'summary' ? summaryLoading : detailLoading
+
   return (
     <div className="p-6 space-y-4">
 
@@ -175,38 +145,24 @@ export function TimeLogsPage() {
           <p className="text-xs text-op-muted mt-0.5">All team time entries</p>
         </div>
         <div className="flex items-center gap-2">
-          {/* View toggle */}
           <div className="flex rounded border border-op-border overflow-hidden text-xs">
-            <button
-              onClick={() => setViewMode('summary')}
-              className={`px-3 py-1.5 font-medium transition-colors ${viewMode === 'summary' ? 'bg-op-primary text-white' : 'bg-white text-op-muted hover:bg-op-hover'}`}
-            >
-              Summary
-            </button>
-            <button
-              onClick={() => setViewMode('detail')}
-              className={`px-3 py-1.5 font-medium transition-colors ${viewMode === 'detail' ? 'bg-op-primary text-white' : 'bg-white text-op-muted hover:bg-op-hover'}`}
-            >
-              Detail
-            </button>
+            <button onClick={() => setViewMode('summary')} className={`px-3 py-1.5 font-medium transition-colors ${viewMode === 'summary' ? 'bg-op-primary text-white' : 'bg-white text-op-muted hover:bg-op-hover'}`}>Summary</button>
+            <button onClick={() => setViewMode('detail')} className={`px-3 py-1.5 font-medium transition-colors ${viewMode === 'detail' ? 'bg-op-primary text-white' : 'bg-white text-op-muted hover:bg-op-hover'}`}>Detail</button>
           </div>
-          {/* Total badge */}
-          <div className="op-panel px-3 py-1.5 text-xs text-op-muted">
-            Total: <span className="font-bold text-op-primary tabular-nums">{grandTotal.toFixed(1)}h</span>
-          </div>
+          {viewMode === 'summary' && (
+            <div className="op-panel px-3 py-1.5 text-xs text-op-muted">
+              Total: <span className="font-bold text-op-primary tabular-nums">{grandTotal.toFixed(1)}h</span>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Filters */}
       <div className="flex items-center gap-2 flex-wrap">
-        {/* Period tabs */}
         <div className="flex rounded border border-op-border overflow-hidden text-xs">
           {(['today', 'week', 'month', 'custom'] as Period[]).map((p) => (
-            <button
-              key={p}
-              onClick={() => { setPeriod(p); setPage(1) }}
-              className={`px-3 py-1.5 font-medium capitalize transition-colors ${period === p ? 'bg-op-primary text-white' : 'bg-white text-op-muted hover:bg-op-hover'}`}
-            >
+            <button key={p} onClick={() => { setPeriod(p); setPage(1) }}
+              className={`px-3 py-1.5 font-medium capitalize transition-colors ${period === p ? 'bg-op-primary text-white' : 'bg-white text-op-muted hover:bg-op-hover'}`}>
               {p === 'week' ? 'This Week' : p === 'month' ? 'This Month' : p.charAt(0).toUpperCase() + p.slice(1)}
             </button>
           ))}
@@ -233,7 +189,7 @@ export function TimeLogsPage() {
         <div className="flex justify-center py-20"><Spinner /></div>
       ) : viewMode === 'summary' ? (
 
-        /* ─── SUMMARY / PIVOT TABLE ─── */
+        /* ── SUMMARY TABLE ── */
         <div className="op-panel overflow-hidden">
           {pivot.length === 0 ? (
             <div className="py-16 text-center text-sm text-op-muted">No time logged for this period.</div>
@@ -242,18 +198,16 @@ export function TimeLogsPage() {
               <thead>
                 <tr>
                   <th>Member</th>
-                  {LOG_CATEGORIES.map((c) => (
-                    <th key={c} className="text-center">{c}</th>
-                  ))}
+                  {LOG_CATEGORIES.map((c) => <th key={c} className="text-center">{c}</th>)}
                   <th className="text-center">Total</th>
                 </tr>
               </thead>
               <tbody>
-                {pivot.map((row) => (
+                {pivot.map((row: SummaryRow) => (
                   <tr key={row.id}>
                     <td>
                       <div className="flex items-center gap-2">
-                        <Avatar name={row.name} src={row.avatarUrl} size="sm" />
+                        <Avatar name={row.name} src={row.avatarUrl ?? undefined} size="sm" />
                         <div>
                           <p className="text-xs font-semibold text-op-text">{row.name}</p>
                           <p className="text-[10px] text-op-muted">{row.department}</p>
@@ -262,11 +216,9 @@ export function TimeLogsPage() {
                     </td>
                     {LOG_CATEGORIES.map((c) => (
                       <td key={c} className="text-center">
-                        {row.cats[c] > 0 ? (
-                          <span className="font-semibold tabular-nums text-op-primary">{row.cats[c]}h</span>
-                        ) : (
-                          <span className="text-op-muted/40 text-xs">—</span>
-                        )}
+                        {(row.cats[c] || 0) > 0
+                          ? <span className="font-semibold tabular-nums text-op-primary">{row.cats[c]}h</span>
+                          : <span className="text-op-muted/40 text-xs">—</span>}
                       </td>
                     ))}
                     <td className="text-center">
@@ -275,17 +227,12 @@ export function TimeLogsPage() {
                   </tr>
                 ))}
               </tbody>
-              {/* Grand total row */}
               <tfoot>
                 <tr className="border-t-2 border-op-border bg-op-table-head">
                   <td className="px-4 py-2 text-xs font-bold text-op-text">Total</td>
                   {LOG_CATEGORIES.map((c) => {
-                    const sum = pivot.reduce((s, r) => s + (r.cats[c] || 0), 0)
-                    return (
-                      <td key={c} className="text-center px-4 py-2">
-                        <span className="font-bold tabular-nums text-op-text">{sum > 0 ? `${sum}h` : '—'}</span>
-                      </td>
-                    )
+                    const sum = pivot.reduce((s: number, r: SummaryRow) => s + (r.cats[c] || 0), 0)
+                    return <td key={c} className="text-center px-4 py-2"><span className="font-bold tabular-nums">{sum > 0 ? `${sum}h` : '—'}</span></td>
                   })}
                   <td className="text-center px-4 py-2">
                     <span className="font-bold tabular-nums text-op-primary">{grandTotal}h</span>
@@ -298,25 +245,17 @@ export function TimeLogsPage() {
 
       ) : (
 
-        /* ─── DETAIL / LIST TABLE ─── */
+        /* ── DETAIL LIST ── */
         <div className="op-panel overflow-hidden">
-          {detailLogs.length === 0 ? (
+          {(detailData?.data ?? []).length === 0 ? (
             <div className="py-16 text-center text-sm text-op-muted">No time logs for this period.</div>
           ) : (
             <table className="op-table">
               <thead>
-                <tr>
-                  <th>Member</th>
-                  <th>Task</th>
-                  <th>Project</th>
-                  <th>Hours</th>
-                  <th>Category</th>
-                  <th>Date</th>
-                  <th>Description</th>
-                </tr>
+                <tr><th>Member</th><th>Task</th><th>Project</th><th>Hours</th><th>Category</th><th>Date</th><th>Description</th></tr>
               </thead>
               <tbody>
-                {detailLogs.map((log) => (
+                {(detailData?.data ?? []).map((log: TimeLog) => (
                   <tr key={log.id}>
                     <td>
                       <div className="flex items-center gap-2">
@@ -327,11 +266,7 @@ export function TimeLogsPage() {
                         </div>
                       </div>
                     </td>
-                    <td>
-                      <Link to={`/tasks/${log.task?.id}`} className="text-op-primary hover:underline font-medium text-xs">
-                        {log.task?.title || '—'}
-                      </Link>
-                    </td>
+                    <td><Link to={`/tasks/${log.task?.id}`} className="text-op-primary hover:underline font-medium text-xs">{log.task?.title || '—'}</Link></td>
                     <td className="text-op-muted text-xs">{(log.task as any)?.project?.name || '—'}</td>
                     <td><span className="font-bold tabular-nums text-op-primary">{log.hours}h</span></td>
                     <td><Badge value={log.category} /></td>
@@ -343,10 +278,9 @@ export function TimeLogsPage() {
             </table>
           )}
           <div className="px-4 py-3 border-t border-op-border">
-            <Pagination page={page} totalPages={detailTotalPages} onPage={setPage} />
+            <Pagination page={page} totalPages={detailData?.pagination?.totalPages || 1} onPage={setPage} />
           </div>
         </div>
-
       )}
     </div>
   )

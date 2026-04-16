@@ -39,6 +39,41 @@ export const timelogsService = {
     return { logs, total, page, limit };
   },
 
+  async summary(query: { userId?: number; role?: string; projectId?: string; filterUserId?: string; dateFrom?: string; dateTo?: string }) {
+    const where: Record<string, unknown> = {};
+    if (query.role === 'User') where.userId = query.userId;
+    if (query.filterUserId) where.userId = parseInt(query.filterUserId);
+    if (query.projectId) where.task = { projectId: parseInt(query.projectId) };
+    if (query.dateFrom || query.dateTo) {
+      where.logDate = {
+        ...(query.dateFrom ? { gte: new Date(query.dateFrom) } : {}),
+        ...(query.dateTo ? { lte: new Date(query.dateTo + 'T23:59:59') } : {}),
+      };
+    }
+    const logs = await prisma.timeLog.findMany({
+      where,
+      select: {
+        userId: true,
+        hours: true,
+        category: true,
+        user: { select: { id: true, name: true, department: true, avatarUrl: true } },
+      },
+      orderBy: { logDate: 'desc' },
+    });
+    // group by user in-memory
+    const map = new Map<number, { id: number; name: string; department: string; avatarUrl: string | null; cats: Record<string, number>; total: number }>();
+    for (const log of logs) {
+      const u = log.user;
+      if (!map.has(u.id)) {
+        map.set(u.id, { id: u.id, name: u.name, department: u.department || '', avatarUrl: u.avatarUrl || null, cats: {}, total: 0 });
+      }
+      const row = map.get(u.id)!;
+      row.cats[log.category] = (row.cats[log.category] || 0) + log.hours;
+      row.total += log.hours;
+    }
+    return Array.from(map.values()).sort((a, b) => b.total - a.total);
+  },
+
   async create(taskId: number, userId: number, data: { hours: number; category?: LogCategory; description?: string; logDate?: string }) {
     const timeLog = await prisma.$transaction(async (tx) => {
       const log = await tx.timeLog.create({

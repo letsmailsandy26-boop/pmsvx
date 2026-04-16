@@ -14,7 +14,7 @@ import notificationsRoutes from './modules/notifications/notifications.routes';
 import reportsRoutes from './modules/reports/reports.routes';
 import dashboardRoutes from './modules/dashboard/dashboard.routes';
 import activitiesRoutes from './modules/activities/activities.routes';
-import { listAllTimeLogs } from './modules/timelogs/timelogs.controller';
+import { listAllTimeLogs, getTimeSummary } from './modules/timelogs/timelogs.controller';
 import { authenticateToken } from './middleware/auth';
 import { errorHandler } from './middleware/errorHandler';
 
@@ -47,6 +47,7 @@ app.use('/api/reports', reportsRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/activities', activitiesRoutes);
 app.use('/api/timelogs', authenticateToken, (req, res, next) => {
+  if (req.method === 'GET' && req.path === '/summary') return getTimeSummary(req as any, res, next);
   if (req.method === 'GET') return listAllTimeLogs(req as any, res, next);
   next();
 });

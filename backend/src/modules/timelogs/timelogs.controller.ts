@@ -14,6 +14,11 @@ export const listAllTimeLogs = asyncHandler(async (req: AuthRequest, res: Respon
   sendPaginated(res, result.logs, result.total, result.page, result.limit);
 });
 
+export const getTimeSummary = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const rows = await timelogsService.summary({ ...(req.query as Record<string, string>), userId: req.user!.id, role: req.user!.role });
+  sendSuccess(res, rows);
+});
+
 export const createTimeLog = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { hours } = req.body;
   if (!hours || hours <= 0) { sendError(res, 'Valid hours required', 400); return; }
