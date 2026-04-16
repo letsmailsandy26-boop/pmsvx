@@ -118,7 +118,7 @@ export function TimeLogsPage() {
                       <td><span className="font-bold tabular-nums text-op-primary">{log.hours}h</span></td>
                       <td><Badge value={log.category} /></td>
                       <td className="text-op-muted text-xs whitespace-nowrap">{formatDate(log.logDate)}</td>
-                      <td className="text-op-muted text-xs max-w-[200px] truncate">{log.description || '—'}</td>
+                      <td className="text-op-muted text-xs" style={{ minWidth: 160, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{log.description || '—'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -271,7 +271,7 @@ export function TimeLogsPage() {
                     <td><span className="font-bold tabular-nums text-op-primary">{log.hours}h</span></td>
                     <td><Badge value={log.category} /></td>
                     <td className="text-op-muted text-xs whitespace-nowrap">{formatDate(log.logDate)}</td>
-                    <td className="text-op-muted text-xs max-w-[180px] truncate">{log.description || '—'}</td>
+                    <td className="text-op-muted text-xs" style={{ minWidth: 160, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{log.description || '—'}</td>
                   </tr>
                 ))}
               </tbody>
