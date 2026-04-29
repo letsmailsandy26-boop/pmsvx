@@ -12,10 +12,11 @@ const taskInclude = {
 };
 
 export const tasksService = {
-  async list(query: { page?: string; limit?: string; status?: string; type?: string; priority?: string; assigneeId?: string; projectId?: string; search?: string; userId?: number; role?: string }) {
+  async list(query: { page?: string; limit?: string; status?: string; excludeStatus?: string; type?: string; priority?: string; assigneeId?: string; projectId?: string; search?: string; userId?: number; role?: string }) {
     const { page, limit, skip, take } = getPagination(query.page, query.limit);
     const where: Record<string, unknown> = {};
     if (query.status) where.status = query.status as TaskStatus;
+    if (query.excludeStatus) where.status = { not: query.excludeStatus as TaskStatus };
     if (query.type) where.type = query.type as TaskType;
     if (query.priority) where.priority = query.priority as Priority;
     if (query.assigneeId) where.assigneeId = parseInt(query.assigneeId);

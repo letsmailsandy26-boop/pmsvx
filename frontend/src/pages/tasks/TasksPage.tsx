@@ -19,7 +19,7 @@ export function TasksPage() {
   const qc = useQueryClient()
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
-  const [status, setStatus] = useState('')
+  const [status, setStatus] = useState('open')
   const [type, setType] = useState('')
   const [priority, setPriority] = useState('')
   const [projectId, setProjectId] = useState(searchParams.get('projectId') || '')
@@ -31,7 +31,8 @@ export function TasksPage() {
       tasksApi.list({
         page,
         search: search || undefined,
-        status: status || undefined,
+        status: status === 'open' ? undefined : status || undefined,
+        excludeStatus: status === 'open' ? 'Closed' : undefined,
         type: type || undefined,
         priority: priority || undefined,
         projectId: projectId || undefined,
@@ -67,6 +68,7 @@ export function TasksPage() {
             />
           </div>
           <select className="input w-36" value={status} onChange={(e) => { setStatus(e.target.value); setPage(1) }}>
+            <option value="open">Open (excl. Closed)</option>
             <option value="">All statuses</option>
             {TASK_STATUSES.map((s) => (
               <option key={s} value={s}>{TASK_STATUS_LABELS[s]}</option>
