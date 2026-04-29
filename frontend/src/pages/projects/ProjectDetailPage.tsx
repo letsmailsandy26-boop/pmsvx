@@ -34,9 +34,15 @@ export function ProjectDetailPage() {
     queryFn: () => projectsApi.getById(projectId),
   })
 
+  const [showClosed, setShowClosed] = useState(false)
+
   const { data: tasks } = useQuery({
-    queryKey: ['tasks', { projectId }],
-    queryFn: () => tasksApi.list({ projectId, limit: 50 }),
+    queryKey: ['tasks', { projectId, showClosed }],
+    queryFn: () => tasksApi.list({
+      projectId,
+      limit: 100,
+      ...(showClosed ? {} : { excludeStatus: 'Closed' }),
+    }),
     enabled: tab === 'Tasks',
   })
 
@@ -258,9 +264,20 @@ export function ProjectDetailPage() {
                 <span className="text-xs text-op-muted font-medium">
                   {tasks?.pagination?.total || 0} work packages
                 </span>
-                <Link to={`/tasks?projectId=${id}`} className="btn-secondary btn-sm">
-                  View all
-                </Link>
+                <div className="flex items-center gap-2">
+                  <label className="flex items-center gap-1.5 cursor-pointer text-xs text-op-muted select-none">
+                    <input
+                      type="checkbox"
+                      checked={showClosed}
+                      onChange={(e) => setShowClosed(e.target.checked)}
+                      className="rounded"
+                    />
+                    Show closed
+                  </label>
+                  <Link to={`/tasks?projectId=${id}`} className="btn-secondary btn-sm">
+                    View all
+                  </Link>
+                </div>
               </div>
               {allTasks.length === 0 && (
                 <div className="op-panel py-12 text-center text-op-muted text-sm">No tasks yet.</div>
